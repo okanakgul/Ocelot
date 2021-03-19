@@ -1,7 +1,5 @@
 namespace Ocelot.UnitTests.Middleware
 {
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Ocelot.DependencyInjection;
@@ -9,6 +7,7 @@ namespace Ocelot.UnitTests.Middleware
     using Ocelot.DownstreamUrlCreator.Middleware;
     using Ocelot.LoadBalancer.Middleware;
     using Ocelot.Middleware;
+    using Ocelot.Middleware.Pipeline;
     using Ocelot.Request.Middleware;
     using Ocelot.WebSockets.Middleware;
     using Shouldly;
@@ -17,8 +16,8 @@ namespace Ocelot.UnitTests.Middleware
 
     public class OcelotPipelineExtensionsTests
     {
-        private ApplicationBuilder _builder;
-        private RequestDelegate _handlers;
+        private OcelotPipelineBuilder _builder;
+        private OcelotRequestDelegate _handlers;
 
         [Fact]
         public void should_set_up_pipeline()
@@ -51,14 +50,15 @@ namespace Ocelot.UnitTests.Middleware
         private void WhenIExpandBuild()
         {
             OcelotPipelineConfiguration configuration = new OcelotPipelineConfiguration();
-            //Func<HttpContext,  bool>, Action<IApplicationBuilder>
-            configuration.MapWhenOcelotPipeline.Add((httpContext) => httpContext.WebSockets.IsWebSocketRequest, app =>
+            configuration.MapWhenOcelotPipeline.Add((app) =>
             {
                 app.UseDownstreamRouteFinderMiddleware();
                 app.UseDownstreamRequestInitialiser();
                 app.UseLoadBalancingMiddleware();
                 app.UseDownstreamUrlCreatorMiddleware();
                 app.UseWebSocketsProxyMiddleware();
+
+                return context => context.HttpContext.WebSockets.IsWebSocketRequest;
             });
             _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
         }
@@ -71,7 +71,7 @@ namespace Ocelot.UnitTests.Middleware
             services.AddSingleton<IConfiguration>(root);
             services.AddOcelot();
             var provider = services.BuildServiceProvider();
-            _builder = new ApplicationBuilder(provider);
+            _builder = new OcelotPipelineBuilder(provider);
         }
     }
 }

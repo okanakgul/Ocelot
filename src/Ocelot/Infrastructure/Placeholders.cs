@@ -7,7 +7,6 @@ namespace Ocelot.Infrastructure
     using Ocelot.Responses;
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     public class Placeholders : IPlaceholders
     {
@@ -26,13 +25,12 @@ namespace Ocelot.Infrastructure
             {
                 { "{BaseUrl}", GetBaseUrl() },
                 { "{TraceId}", GetTraceId() },
-                { "{RemoteIpAddress}", GetRemoteIpAddress() },
-                { "{UpstreamHost}", GetUpstreamHost() },
+                { "{RemoteIpAddress}", GetRemoteIpAddress() }
             };
 
             _requestPlaceholders = new Dictionary<string, Func<DownstreamRequest, string>>
             {
-                { "{DownstreamBaseUrl}", GetDownstreamBaseUrl() },
+                { "{DownstreamBaseUrl}", GetDownstreamBaseUrl() }
             };
         }
 
@@ -131,26 +129,6 @@ namespace Ocelot.Infrastructure
         private Func<Response<string>> GetBaseUrl()
         {
             return () => new OkResponse<string>(_finder.Find());
-        }
-
-        private Func<Response<string>> GetUpstreamHost()
-        {
-            return () =>
-            {
-                try
-                {
-                    if (_httpContextAccessor.HttpContext.Request.Headers.TryGetValue("Host", out var upstreamHost))
-                    {
-                        return new OkResponse<string>(upstreamHost.First());
-                    }
-
-                    return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{UpstreamHost}"));
-                }
-                catch
-                {
-                    return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{UpstreamHost}"));
-                }
-            };
         }
     }
 }

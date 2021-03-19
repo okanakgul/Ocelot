@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Ocelot.Configuration
 {
@@ -8,14 +7,12 @@ namespace Ocelot.Configuration
     /// </summary>
     public class RateLimitOptions
     {
-        private readonly Func<List<string>> _getClientWhitelist;
-
-        public RateLimitOptions(bool enableRateLimiting, string clientIdHeader, Func<List<string>> getClientWhitelist, bool disableRateLimitHeaders,
+        public RateLimitOptions(bool enbleRateLimiting, string clientIdHeader, List<string> clientWhitelist, bool disableRateLimitHeaders,
             string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule, int httpStatusCode)
         {
-            EnableRateLimiting = enableRateLimiting;
+            EnableRateLimiting = enbleRateLimiting;
             ClientIdHeader = clientIdHeader;
-            _getClientWhitelist = getClientWhitelist;
+            ClientWhitelist = clientWhitelist ?? new List<string>();
             DisableRateLimitHeaders = disableRateLimitHeaders;
             QuotaExceededMessage = quotaExceededMessage;
             RateLimitCounterPrefix = rateLimitCounterPrefix;
@@ -25,10 +22,7 @@ namespace Ocelot.Configuration
 
         public RateLimitRule RateLimitRule { get; private set; }
 
-        /// <summary>
-        /// Gets the list of white listed clients
-        /// </summary>
-        public List<string> ClientWhitelist { get => _getClientWhitelist(); }
+        public List<string> ClientWhitelist { get; private set; }
 
         /// <summary>
         /// Gets or sets the HTTP header that holds the client identifier, by default is X-ClientId

@@ -1,17 +1,17 @@
+using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Shouldly;
+using System.Collections.Generic;
+using TestStack.BDDfy;
+using Xunit;
+
 namespace Ocelot.UnitTests.Configuration
 {
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Shouldly;
-    using System.Collections.Generic;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class DownstreamAddressesCreatorTests
     {
         public DownstreamAddressesCreator _creator;
-        private FileRoute _route;
+        private FileReRoute _reRoute;
         private List<DownstreamHostAndPort> _result;
 
         public DownstreamAddressesCreatorTests()
@@ -22,7 +22,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_do_nothing()
         {
-            var route = new FileRoute
+            var reRoute = new FileReRoute
             {
             };
 
@@ -30,7 +30,7 @@ namespace Ocelot.UnitTests.Configuration
             {
             };
 
-            this.Given(x => GivenTheFollowingRoute(route))
+            this.Given(x => GivenTheFollowingReRoute(reRoute))
                 .When(x => WhenICreate())
                 .Then(x => TheThenFollowingIsReturned(expected))
                 .BDDfy();
@@ -39,7 +39,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_downstream_addresses_from_old_downstream_path_and_port()
         {
-            var route = new FileRoute
+            var reRoute = new FileReRoute
             {
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
@@ -56,7 +56,7 @@ namespace Ocelot.UnitTests.Configuration
                 new DownstreamHostAndPort("test", 80),
             };
 
-            this.Given(x => GivenTheFollowingRoute(route))
+            this.Given(x => GivenTheFollowingReRoute(reRoute))
                 .When(x => WhenICreate())
                 .Then(x => TheThenFollowingIsReturned(expected))
                 .BDDfy();
@@ -65,7 +65,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_downstream_addresses_from_downstream_host_and_ports()
         {
-            var route = new FileRoute
+            var reRoute = new FileReRoute
             {
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
@@ -88,20 +88,20 @@ namespace Ocelot.UnitTests.Configuration
                 new DownstreamHostAndPort("west", 443)
             };
 
-            this.Given(x => GivenTheFollowingRoute(route))
+            this.Given(x => GivenTheFollowingReRoute(reRoute))
                 .When(x => WhenICreate())
                 .Then(x => TheThenFollowingIsReturned(expected))
                 .BDDfy();
         }
 
-        private void GivenTheFollowingRoute(FileRoute route)
+        private void GivenTheFollowingReRoute(FileReRoute reRoute)
         {
-            _route = route;
+            _reRoute = reRoute;
         }
 
         private void WhenICreate()
         {
-            _result = _creator.Create(_route);
+            _result = _creator.Create(_reRoute);
         }
 
         private void TheThenFollowingIsReturned(List<DownstreamHostAndPort> expecteds)

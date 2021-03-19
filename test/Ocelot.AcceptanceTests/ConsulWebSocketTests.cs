@@ -34,14 +34,14 @@
         [Fact]
         public void should_proxy_websocket_input_to_downstream_service_and_use_service_discovery_and_load_balancer()
         {
-            var downstreamPort = RandomPortFinder.GetRandomPort();
+            var downstreamPort = 5007;
             var downstreamHost = "localhost";
 
-            var secondDownstreamPort = RandomPortFinder.GetRandomPort();
+            var secondDownstreamPort = 5008;
             var secondDownstreamHost = "localhost";
 
             var serviceName = "websockets";
-            var consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = 8509;
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
             {
@@ -68,9 +68,9 @@
 
             var config = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         UpstreamPathTemplate = "/",
                         DownstreamPathTemplate = "/ws",
@@ -83,7 +83,6 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
-                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort,
                         Type = "consul"

@@ -1,9 +1,9 @@
 ﻿namespace Ocelot.Configuration.File
 {
-    public interface IRoute
+    public interface IReRoute
     {
         string UpstreamPathTemplate { get; set; }
-        bool RouteIsCaseSensitive { get; set; }
+        bool ReRouteIsCaseSensitive { get; set; }
         int Priority { get; set; }
     }
 }

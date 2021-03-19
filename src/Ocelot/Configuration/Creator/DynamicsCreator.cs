@@ -8,40 +8,35 @@ namespace Ocelot.Configuration.Creator
     public class DynamicsCreator : IDynamicsCreator
     {
         private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
-        private readonly IVersionCreator _versionCreator;
 
-        public DynamicsCreator(IRateLimitOptionsCreator rateLimitOptionsCreator, IVersionCreator versionCreator)
+        public DynamicsCreator(IRateLimitOptionsCreator rateLimitOptionsCreator)
         {
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
-            _versionCreator = versionCreator;
         }
 
-        public List<Route> Create(FileConfiguration fileConfiguration)
+        public List<ReRoute> Create(FileConfiguration fileConfiguration)
         {
-            return fileConfiguration.DynamicRoutes
-                .Select(dynamic => SetUpDynamicRoute(dynamic, fileConfiguration.GlobalConfiguration))
+            return fileConfiguration.DynamicReRoutes
+                .Select(dynamic => SetUpDynamicReRoute(dynamic, fileConfiguration.GlobalConfiguration))
                 .ToList();
         }
 
-        private Route SetUpDynamicRoute(FileDynamicRoute fileDynamicRoute, FileGlobalConfiguration globalConfiguration)
+        private ReRoute SetUpDynamicReRoute(FileDynamicReRoute fileDynamicReRoute, FileGlobalConfiguration globalConfiguration)
         {
             var rateLimitOption = _rateLimitOptionsCreator
-                .Create(fileDynamicRoute.RateLimitRule, globalConfiguration);
+                .Create(fileDynamicReRoute.RateLimitRule, globalConfiguration);
 
-            var version = _versionCreator.Create(fileDynamicRoute.DownstreamHttpVersion);
-
-            var downstreamRoute = new DownstreamRouteBuilder()
+            var downstreamReRoute = new DownstreamReRouteBuilder()
                 .WithEnableRateLimiting(rateLimitOption.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
-                .WithServiceName(fileDynamicRoute.ServiceName)
-                .WithDownstreamHttpVersion(version)
+                .WithServiceName(fileDynamicReRoute.ServiceName)
                 .Build();
 
-            var route = new RouteBuilder()
-                .WithDownstreamRoute(downstreamRoute)
+            var reRoute = new ReRouteBuilder()
+                .WithDownstreamReRoute(downstreamReRoute)
                 .Build();
 
-            return route;
+            return reRoute;
         }
     }
 }

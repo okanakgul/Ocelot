@@ -25,13 +25,11 @@
         [Fact]
         public void should_not_timeout()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -39,7 +37,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 51569,
                             }
                         },
                         DownstreamScheme = "http",
@@ -54,7 +52,7 @@
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty, 10))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51569", 200, string.Empty, 10))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithPolly())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
@@ -66,13 +64,11 @@
         [Fact]
         public void should_timeout()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -80,7 +76,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 51579,
                             }
                         },
                         DownstreamScheme = "http",
@@ -95,7 +91,7 @@
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 1000))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51579", 201, string.Empty, 1000))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithPolly())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
@@ -107,13 +103,11 @@
         [Fact]
         public void should_open_circuit_breaker_then_close()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -122,7 +116,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 51892,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -137,7 +131,7 @@
                 }
             };
 
-            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn("http://localhost:51892", "Hello from Laura"))
                 .Given(x => _steps.GivenThereIsAConfiguration(configuration))
                 .Given(x => _steps.GivenOcelotIsRunningWithPolly())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -157,16 +151,13 @@
         }
 
         [Fact]
-        public void open_circuit_should_not_effect_different_route()
+        public void open_circuit_should_not_effect_different_reRoute()
         {
-            var port1 = RandomPortFinder.GetRandomPort();
-            var port2 = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -175,7 +166,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port1,
+                                Port = 51872,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -187,7 +178,7 @@
                             DurationOfBreak = 1000
                         }
                     },
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -196,7 +187,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port2,
+                                Port = 51880,
                             }
                         },
                         UpstreamPathTemplate = "/working",
@@ -205,8 +196,8 @@
                 }
             };
 
-            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port1}", "Hello from Laura"))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port2}/", 200, "Hello from Tom", 0))
+            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn("http://localhost:51872", "Hello from Laura"))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51880/", 200, "Hello from Tom", 0))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithPolly())
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

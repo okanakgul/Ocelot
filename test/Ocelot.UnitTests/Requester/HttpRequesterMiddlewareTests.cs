@@ -14,11 +14,8 @@ namespace Ocelot.UnitTests.Requester
     using System.Linq;
     using System.Net.Http;
     using System.Threading.Tasks;
-    using Ocelot.Configuration;
-    using Ocelot.Infrastructure.RequestData;
     using TestStack.BDDfy;
     using Xunit;
-    using Ocelot.DownstreamRouteFinder.Middleware;
 
     public class HttpRequesterMiddlewareTests
     {
@@ -27,12 +24,11 @@ namespace Ocelot.UnitTests.Requester
         private Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private readonly HttpRequesterMiddleware _middleware;
-        private RequestDelegate _next;
-        private HttpContext _httpContext;
+        private DownstreamContext _downstreamContext;
+        private OcelotRequestDelegate _next;
 
         public HttpRequesterMiddlewareTests()
         {
-            _httpContext = new DefaultHttpContext();
             _requester = new Mock<IHttpRequester>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
@@ -45,10 +41,9 @@ namespace Ocelot.UnitTests.Requester
         public void should_call_services_correctly()
         {
             this.Given(x => x.GivenTheRequestIs())
-                .And(x => x.GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage(System.Net.HttpStatusCode.OK))))
+                .And(x => x.GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheDownstreamResponseIsSet())
-                .Then(x => InformationIsLogged())
                 .BDDfy();
         }
 
@@ -62,30 +57,23 @@ namespace Ocelot.UnitTests.Requester
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_log_downstream_internal_server_error()
-        {
-            this.Given(x => x.GivenTheRequestIs())
-                    .And(x => x.GivenTheRequesterReturns(
-                        new OkResponse<HttpResponseMessage>(new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError))))
-                .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.WarningIsLogged())
-                .BDDfy();
-        }
-
         private void ThenTheErrorIsSet()
         {
-            _httpContext.Items.Errors().Count.ShouldBeGreaterThan(0);
+            _downstreamContext.IsError.ShouldBeTrue();
         }
 
         private void WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            _middleware.Invoke(_downstreamContext).GetAwaiter().GetResult();
         }
 
         private void GivenTheRequestIs()
         {
-            _httpContext.Items.UpsertDownstreamRoute(new DownstreamRouteBuilder().Build());
+            _downstreamContext =
+                new DownstreamContext(new DefaultHttpContext())
+                {
+                    DownstreamReRoute = new DownstreamReRouteBuilder().Build()
+                };
         }
 
         private void GivenTheRequesterReturns(Response<HttpResponseMessage> response)
@@ -93,7 +81,7 @@ namespace Ocelot.UnitTests.Requester
             _response = response;
 
             _requester
-                .Setup(x => x.GetResponse(It.IsAny<HttpContext>()))
+                .Setup(x => x.GetResponse(It.IsAny<DownstreamContext>()))
                 .ReturnsAsync(_response);
         }
 
@@ -101,32 +89,14 @@ namespace Ocelot.UnitTests.Requester
         {
             foreach (var httpResponseHeader in _response.Data.Headers)
             {
-                if (_httpContext.Items.DownstreamResponse().Headers.Any(x => x.Key == httpResponseHeader.Key))
+                if (_downstreamContext.DownstreamResponse.Headers.Any(x => x.Key == httpResponseHeader.Key))
                 {
                     throw new Exception("Header in response not in downstreamresponse headers");
                 }
             }
 
-            _httpContext.Items.DownstreamResponse().Content.ShouldBe(_response.Data.Content);
-            _httpContext.Items.DownstreamResponse().StatusCode.ShouldBe(_response.Data.StatusCode);
-        }
-
-        private void WarningIsLogged()
-        {
-            _logger.Verify(
-                x => x.LogWarning(                 
-                    It.IsAny<string>()
-                   ),
-                Times.Once);
-        }
-
-        private void InformationIsLogged()
-        {
-            _logger.Verify(
-                x => x.LogInformation(
-                    It.IsAny<string>()
-                ),
-                Times.Once);
+            _downstreamContext.DownstreamResponse.Content.ShouldBe(_response.Data.Content);
+            _downstreamContext.DownstreamResponse.StatusCode.ShouldBe(_response.Data.StatusCode);
         }
     }
 }

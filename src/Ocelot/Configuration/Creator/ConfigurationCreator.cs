@@ -13,15 +13,13 @@ namespace Ocelot.Configuration.Creator
         private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
         private readonly IAdministrationPath _adminPath;
         private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
-        private readonly IVersionCreator _versionCreator;
 
         public ConfigurationCreator(
             IServiceProviderConfigurationCreator serviceProviderConfigCreator,
             IQoSOptionsCreator qosOptionsCreator,
             IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
             IServiceProvider serviceProvider,
-            ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
-            IVersionCreator versionCreator
+            ILoadBalancerOptionsCreator loadBalancerOptionsCreator
             )
         {
             _adminPath = serviceProvider.GetService<IAdministrationPath>();
@@ -29,10 +27,9 @@ namespace Ocelot.Configuration.Creator
             _serviceProviderConfigCreator = serviceProviderConfigCreator;
             _qosOptionsCreator = qosOptionsCreator;
             _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
-            _versionCreator = versionCreator;
         }
 
-        public InternalConfiguration Create(FileConfiguration fileConfiguration, List<Route> routes)
+        public InternalConfiguration Create(FileConfiguration fileConfiguration, List<ReRoute> reRoutes)
         {
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
 
@@ -44,17 +41,14 @@ namespace Ocelot.Configuration.Creator
 
             var adminPath = _adminPath != null ? _adminPath.Path : null;
 
-            var version = _versionCreator.Create(fileConfiguration.GlobalConfiguration.DownstreamHttpVersion);
-
-            return new InternalConfiguration(routes,
+            return new InternalConfiguration(reRoutes,
                 adminPath,
                 serviceProviderConfiguration,
                 fileConfiguration.GlobalConfiguration.RequestIdKey,
                 lbOptions,
                 fileConfiguration.GlobalConfiguration.DownstreamScheme,
                 qosOptions,
-                httpHandlerOptions,
-                version
+                httpHandlerOptions
                 );
         }
     }

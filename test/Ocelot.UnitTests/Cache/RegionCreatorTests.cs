@@ -10,18 +10,18 @@ namespace Ocelot.UnitTests.Cache
     public class RegionCreatorTests
     {
         private string _result;
-        private FileRoute _route;
+        private FileReRoute _reRoute;
 
         [Fact]
         public void should_create_region()
         {
-            var route = new FileRoute
+            var reRoute = new FileReRoute
             {
                 UpstreamHttpMethod = new List<string> { "Get" },
                 UpstreamPathTemplate = "/testdummy"
             };
 
-            this.Given(_ => GivenTheRoute(route))
+            this.Given(_ => GivenTheReRoute(reRoute))
                 .When(_ => WhenICreateTheRegion())
                 .Then(_ => ThenTheRegionIs("Gettestdummy"))
                 .BDDfy();
@@ -30,7 +30,7 @@ namespace Ocelot.UnitTests.Cache
         [Fact]
         public void should_use_region()
         {
-            var route = new FileRoute
+            var reRoute = new FileReRoute
             {
                 FileCacheOptions = new FileCacheOptions
                 {
@@ -38,21 +38,21 @@ namespace Ocelot.UnitTests.Cache
                 }
             };
 
-            this.Given(_ => GivenTheRoute(route))
+            this.Given(_ => GivenTheReRoute(reRoute))
                 .When(_ => WhenICreateTheRegion())
                 .Then(_ => ThenTheRegionIs("region"))
                 .BDDfy();
         }
 
-        private void GivenTheRoute(FileRoute route)
+        private void GivenTheReRoute(FileReRoute reRoute)
         {
-            _route = route;
+            _reRoute = reRoute;
         }
 
         private void WhenICreateTheRegion()
         {
             RegionCreator regionCreator = new RegionCreator();
-            _result = regionCreator.Create(_route);
+            _result = regionCreator.Create(_reRoute);
         }
 
         private void ThenTheRegionIs(string expected)

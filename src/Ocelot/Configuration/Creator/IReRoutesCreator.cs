@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Creator
 {
-    public interface IRoutesCreator
+    public interface IReRoutesCreator
     {
-        List<Route> Create(FileConfiguration fileConfiguration);
+        List<ReRoute> Create(FileConfiguration fileConfiguration);
     }
 }

@@ -26,9 +26,9 @@
 
             builder.Services.AddSingleton(errorMapping);
 
-            DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute route, IOcelotLoggerFactory logger)
+            DelegatingHandler QosDelegatingHandlerDelegate(DownstreamReRoute reRoute, IOcelotLoggerFactory logger)
             {
-                return new PollyCircuitBreakingDelegatingHandler(new PollyQoSProvider(route, logger), logger);
+                return new PollyCircuitBreakingDelegatingHandler(new PollyQoSProvider(reRoute, logger), logger);
             }
 
             builder.Services.AddSingleton((QosDelegatingHandlerDelegate)QosDelegatingHandlerDelegate);

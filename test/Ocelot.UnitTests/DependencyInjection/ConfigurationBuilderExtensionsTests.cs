@@ -18,8 +18,8 @@
         private string _result;
         private IConfigurationRoot _configRoot;
         private FileConfiguration _globalConfig;
-        private FileConfiguration _routeA;
-        private FileConfiguration _routeB;
+        private FileConfiguration _reRouteA;
+        private FileConfiguration _reRouteB;
         private FileConfiguration _aggregate;
         private FileConfiguration _envSpecific;
         private Mock<IWebHostEnvironment> _hostingEnvironment;
@@ -98,7 +98,6 @@
                     },
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
-                        Scheme = "https",
                         Host = "Host",
                         Port = 80,
                         Type = "Type"
@@ -107,11 +106,11 @@
                 }
             };
 
-            _routeA = new FileConfiguration
+            _reRouteA = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamScheme = "DownstreamScheme",
                         DownstreamPathTemplate = "DownstreamPathTemplate",
@@ -133,11 +132,11 @@
                 }
             };
 
-            _routeB = new FileConfiguration
+            _reRouteB = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamScheme = "DownstreamSchemeB",
                         DownstreamPathTemplate = "DownstreamPathTemplateB",
@@ -156,7 +155,7 @@
                             }
                         }
                     },
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamScheme = "DownstreamSchemeBB",
                         DownstreamPathTemplate = "DownstreamPathTemplateBB",
@@ -180,20 +179,20 @@
 
             _aggregate = new FileConfiguration
             {
-                Aggregates = new List<FileAggregateRoute>
+                Aggregates = new List<FileAggregateReRoute>
                 {
-                    new FileAggregateRoute
+                    new FileAggregateReRoute
                     {
-                        RouteKeys = new List<string>
+                        ReRouteKeys = new List<string>
                         {
                             "KeyB",
                             "KeyBB"
                         },
                         UpstreamPathTemplate = "UpstreamPathTemplate",
                     },
-                    new FileAggregateRoute
+                    new FileAggregateReRoute
                     {
-                        RouteKeys = new List<string>
+                        ReRouteKeys = new List<string>
                         {
                             "KeyB",
                             "KeyBB"
@@ -205,9 +204,9 @@
 
             _envSpecific = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamScheme = "DownstreamSchemeSpec",
                             DownstreamPathTemplate = "DownstreamPathTemplateSpec",
@@ -230,13 +229,13 @@
             };
 
             string globalFilename = Path.Combine(folder, "ocelot.global.json");
-            string routesAFilename = Path.Combine(folder, "ocelot.routesA.json");
-            string routesBFilename = Path.Combine(folder, "ocelot.routesB.json");
+            string reroutesAFilename = Path.Combine(folder, "ocelot.reRoutesA.json");
+            string reroutesBFilename = Path.Combine(folder, "ocelot.reRoutesB.json");
             string aggregatesFilename = Path.Combine(folder, "ocelot.aggregates.json");
 
             File.WriteAllText(globalFilename, JsonConvert.SerializeObject(_globalConfig));
-            File.WriteAllText(routesAFilename, JsonConvert.SerializeObject(_routeA));
-            File.WriteAllText(routesBFilename, JsonConvert.SerializeObject(_routeB));
+            File.WriteAllText(reroutesAFilename, JsonConvert.SerializeObject(_reRouteA));
+            File.WriteAllText(reroutesBFilename, JsonConvert.SerializeObject(_reRouteB));
             File.WriteAllText(aggregatesFilename, JsonConvert.SerializeObject(_aggregate));
 
             if (addEnvSpecificConfig)
@@ -278,28 +277,27 @@
             fc.GlobalConfiguration.RateLimitOptions.QuotaExceededMessage.ShouldBe(_globalConfig.GlobalConfiguration.RateLimitOptions.QuotaExceededMessage);
             fc.GlobalConfiguration.RateLimitOptions.RateLimitCounterPrefix.ShouldBe(_globalConfig.GlobalConfiguration.RateLimitOptions.RateLimitCounterPrefix);
             fc.GlobalConfiguration.RequestIdKey.ShouldBe(_globalConfig.GlobalConfiguration.RequestIdKey);
-            fc.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(_globalConfig.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
             fc.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(_globalConfig.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             fc.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(_globalConfig.GlobalConfiguration.ServiceDiscoveryProvider.Port);
             fc.GlobalConfiguration.ServiceDiscoveryProvider.Type.ShouldBe(_globalConfig.GlobalConfiguration.ServiceDiscoveryProvider.Type);
 
-            fc.Routes.Count.ShouldBe(_routeA.Routes.Count + _routeB.Routes.Count);
+            fc.ReRoutes.Count.ShouldBe(_reRouteA.ReRoutes.Count + _reRouteB.ReRoutes.Count);
 
-            fc.Routes.ShouldContain(x => x.DownstreamPathTemplate == _routeA.Routes[0].DownstreamPathTemplate);
-            fc.Routes.ShouldContain(x => x.DownstreamPathTemplate == _routeB.Routes[0].DownstreamPathTemplate);
-            fc.Routes.ShouldContain(x => x.DownstreamPathTemplate == _routeB.Routes[1].DownstreamPathTemplate);
+            fc.ReRoutes.ShouldContain(x => x.DownstreamPathTemplate == _reRouteA.ReRoutes[0].DownstreamPathTemplate);
+            fc.ReRoutes.ShouldContain(x => x.DownstreamPathTemplate == _reRouteB.ReRoutes[0].DownstreamPathTemplate);
+            fc.ReRoutes.ShouldContain(x => x.DownstreamPathTemplate == _reRouteB.ReRoutes[1].DownstreamPathTemplate);
 
-            fc.Routes.ShouldContain(x => x.DownstreamScheme == _routeA.Routes[0].DownstreamScheme);
-            fc.Routes.ShouldContain(x => x.DownstreamScheme == _routeB.Routes[0].DownstreamScheme);
-            fc.Routes.ShouldContain(x => x.DownstreamScheme == _routeB.Routes[1].DownstreamScheme);
+            fc.ReRoutes.ShouldContain(x => x.DownstreamScheme == _reRouteA.ReRoutes[0].DownstreamScheme);
+            fc.ReRoutes.ShouldContain(x => x.DownstreamScheme == _reRouteB.ReRoutes[0].DownstreamScheme);
+            fc.ReRoutes.ShouldContain(x => x.DownstreamScheme == _reRouteB.ReRoutes[1].DownstreamScheme);
 
-            fc.Routes.ShouldContain(x => x.Key == _routeA.Routes[0].Key);
-            fc.Routes.ShouldContain(x => x.Key == _routeB.Routes[0].Key);
-            fc.Routes.ShouldContain(x => x.Key == _routeB.Routes[1].Key);
+            fc.ReRoutes.ShouldContain(x => x.Key == _reRouteA.ReRoutes[0].Key);
+            fc.ReRoutes.ShouldContain(x => x.Key == _reRouteB.ReRoutes[0].Key);
+            fc.ReRoutes.ShouldContain(x => x.Key == _reRouteB.ReRoutes[1].Key);
 
-            fc.Routes.ShouldContain(x => x.UpstreamHost == _routeA.Routes[0].UpstreamHost);
-            fc.Routes.ShouldContain(x => x.UpstreamHost == _routeB.Routes[0].UpstreamHost);
-            fc.Routes.ShouldContain(x => x.UpstreamHost == _routeB.Routes[1].UpstreamHost);
+            fc.ReRoutes.ShouldContain(x => x.UpstreamHost == _reRouteA.ReRoutes[0].UpstreamHost);
+            fc.ReRoutes.ShouldContain(x => x.UpstreamHost == _reRouteB.ReRoutes[0].UpstreamHost);
+            fc.ReRoutes.ShouldContain(x => x.UpstreamHost == _reRouteB.ReRoutes[1].UpstreamHost);
 
             fc.Aggregates.Count.ShouldBe(_aggregate.Aggregates.Count);
         }
@@ -307,9 +305,9 @@
         private void NotContainsEnvSpecificConfig()
         {
             var fc = (FileConfiguration)_configRoot.Get(typeof(FileConfiguration));
-            fc.Routes.ShouldNotContain(x => x.DownstreamScheme == _envSpecific.Routes[0].DownstreamScheme);
-            fc.Routes.ShouldNotContain(x => x.DownstreamPathTemplate == _envSpecific.Routes[0].DownstreamPathTemplate);
-            fc.Routes.ShouldNotContain(x => x.Key == _envSpecific.Routes[0].Key);
+            fc.ReRoutes.ShouldNotContain(x => x.DownstreamScheme == _envSpecific.ReRoutes[0].DownstreamScheme);
+            fc.ReRoutes.ShouldNotContain(x => x.DownstreamPathTemplate == _envSpecific.ReRoutes[0].DownstreamPathTemplate);
+            fc.ReRoutes.ShouldNotContain(x => x.Key == _envSpecific.ReRoutes[0].Key);
         }
 
         private void GivenTheBaseUrl(string baseUrl)
@@ -323,7 +321,7 @@
 
         private void WhenIGet(string key)
         {
-            _result = _configuration.GetValue(key, "");
+            _result = _configuration.GetValue("BaseUrl", "");
         }
 
         private void ThenTheResultIs(string expected)

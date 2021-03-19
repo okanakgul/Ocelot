@@ -22,13 +22,11 @@
         [Fact]
         public void should_use_default_request_id_and_forward()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -36,7 +34,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51873,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -47,7 +45,7 @@
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51873"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -58,13 +56,11 @@
         [Fact]
         public void should_use_request_id_and_forward()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -72,7 +68,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51873,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -84,7 +80,7 @@
 
             var requestId = Guid.NewGuid().ToString();
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51873"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))
@@ -95,13 +91,11 @@
         [Fact]
         public void should_use_global_request_id_and_forward()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -109,7 +103,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51873,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -125,7 +119,7 @@
 
             var requestId = Guid.NewGuid().ToString();
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51873"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))
@@ -136,13 +130,11 @@
         [Fact]
         public void should_use_global_request_id_create_and_forward()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -150,7 +142,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51873,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -164,7 +156,7 @@
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51873"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

@@ -17,46 +17,46 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRoute> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod, IInternalConfiguration configuration, string upstreamHost)
         {
-            var downstreamRoutes = new List<DownstreamRouteHolder>();
+            var downstreamRoutes = new List<DownstreamRoute>();
 
-            var applicableRoutes = configuration.Routes
+            var applicableReRoutes = configuration.ReRoutes
                 .Where(r => RouteIsApplicableToThisRequest(r, httpMethod, upstreamHost))
                 .OrderByDescending(x => x.UpstreamTemplatePattern.Priority);
 
-            foreach (var route in applicableRoutes)
+            foreach (var reRoute in applicableReRoutes)
             {
-                var urlMatch = _urlMatcher.Match(upstreamUrlPath, upstreamQueryString, route.UpstreamTemplatePattern);
+                var urlMatch = _urlMatcher.Match(upstreamUrlPath, upstreamQueryString, reRoute.UpstreamTemplatePattern);
 
                 if (urlMatch.Data.Match)
                 {
-                    downstreamRoutes.Add(GetPlaceholderNamesAndValues(upstreamUrlPath, upstreamQueryString, route));
+                    downstreamRoutes.Add(GetPlaceholderNamesAndValues(upstreamUrlPath, upstreamQueryString, reRoute));
                 }
             }
 
             if (downstreamRoutes.Any())
             {
-                var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.Route.UpstreamHost));
-                var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.Route.UpstreamHost));
+                var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
+                var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.ReRoute.UpstreamHost));
 
-                return notNullOption != null ? new OkResponse<DownstreamRouteHolder>(notNullOption) : new OkResponse<DownstreamRouteHolder>(nullOption);
+                return notNullOption != null ? new OkResponse<DownstreamRoute>(notNullOption) : new OkResponse<DownstreamRoute>(nullOption);
             }
 
-            return new ErrorResponse<DownstreamRouteHolder>(new UnableToFindDownstreamRouteError(upstreamUrlPath, httpMethod));
+            return new ErrorResponse<DownstreamRoute>(new UnableToFindDownstreamRouteError(upstreamUrlPath, httpMethod));
         }
 
-        private bool RouteIsApplicableToThisRequest(Route route, string httpMethod, string upstreamHost)
+        private bool RouteIsApplicableToThisRequest(ReRoute reRoute, string httpMethod, string upstreamHost)
         {
-            return (route.UpstreamHttpMethod.Count == 0 || route.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower())) &&
-                   (string.IsNullOrEmpty(route.UpstreamHost) || route.UpstreamHost == upstreamHost);
+            return (reRoute.UpstreamHttpMethod.Count == 0 || reRoute.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower())) &&
+                   (string.IsNullOrEmpty(reRoute.UpstreamHost) || reRoute.UpstreamHost == upstreamHost);
         }
 
-        private DownstreamRouteHolder GetPlaceholderNamesAndValues(string path, string query, Route route)
+        private DownstreamRoute GetPlaceholderNamesAndValues(string path, string query, ReRoute reRoute)
         {
-            var templatePlaceholderNameAndValues = _placeholderNameAndValueFinder.Find(path, query, route.UpstreamTemplatePattern.OriginalValue);
+            var templatePlaceholderNameAndValues = _placeholderNameAndValueFinder.Find(path, query, reRoute.UpstreamTemplatePattern.OriginalValue);
 
-            return new DownstreamRouteHolder(templatePlaceholderNameAndValues.Data, route);
+            return new DownstreamRoute(templatePlaceholderNameAndValues.Data, reRoute);
         }
     }
 }

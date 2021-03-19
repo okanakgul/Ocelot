@@ -5,8 +5,8 @@
 
     public interface IHttpClientCache
     {
-        IHttpClient Get(DownstreamRoute key);
+        IHttpClient Get(DownstreamReRoute key);
 
-        void Set(DownstreamRoute key, IHttpClient handler, TimeSpan expirationTime);
+        void Set(DownstreamReRoute key, IHttpClient handler, TimeSpan expirationTime);
     }
 }

@@ -26,14 +26,13 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    features/servicefabric
    features/kubernetes
    features/authentication
-   features/authorization
+   features/authorisation
    features/websockets
    features/administration
    features/ratelimiting
    features/caching
    features/qualityofservice
    features/headerstransformation 
-   features/methodtransformation
    features/claimstransformation 
    features/logging
    features/tracing
@@ -41,7 +40,7 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    features/middlewareinjection
    features/loadbalancer
    features/delegatinghandlers
-   features/errorcodes
+   features/raft
 
 .. toctree::
    :maxdepth: 2

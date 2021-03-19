@@ -6,17 +6,17 @@ namespace Ocelot.Configuration.File
     {
         public FileConfiguration()
         {
-            Routes = new List<FileRoute>();
+            ReRoutes = new List<FileReRoute>();
             GlobalConfiguration = new FileGlobalConfiguration();
-            Aggregates = new List<FileAggregateRoute>();
-            DynamicRoutes = new List<FileDynamicRoute>();
+            Aggregates = new List<FileAggregateReRoute>();
+            DynamicReRoutes = new List<FileDynamicReRoute>();
         }
 
-        public List<FileRoute> Routes { get; set; }
-        public List<FileDynamicRoute> DynamicRoutes { get; set; }
+        public List<FileReRoute> ReRoutes { get; set; }
+        public List<FileDynamicReRoute> DynamicReRoutes { get; set; }
 
-        // Seperate field for aggregates because this let's you re-use Routes in multiple Aggregates
-        public List<FileAggregateRoute> Aggregates { get; set; }
+        // Seperate field for aggregates because this let's you re-use ReRoutes in multiple Aggregates
+        public List<FileAggregateReRoute> Aggregates { get; set; }
 
         public FileGlobalConfiguration GlobalConfiguration { get; set; }
     }

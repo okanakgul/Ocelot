@@ -25,13 +25,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_reason_phrase()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -40,7 +38,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51339,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -49,7 +47,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", "some reason"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51339", "/", "some reason"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

@@ -33,12 +33,10 @@
         [Fact]
         public void should_use_consul_service_discovery_and_load_balance_request()
         {
-            var consulPort = RandomPortFinder.GetRandomPort();
-            var servicePort1 = RandomPortFinder.GetRandomPort();
-            var servicePort2 = RandomPortFinder.GetRandomPort();
+            var consulPort = 8502;
             var serviceName = "product";
-            var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
-            var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
+            var downstreamServiceOneUrl = "http://localhost:50881";
+            var downstreamServiceTwoUrl = "http://localhost:50882";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
             {
@@ -46,7 +44,7 @@
                 {
                     Service = serviceName,
                     Address = "localhost",
-                    Port = servicePort1,
+                    Port = 50881,
                     ID = Guid.NewGuid().ToString(),
                     Tags = new string[0]
                 },
@@ -57,7 +55,7 @@
                 {
                     Service = serviceName,
                     Address = "localhost",
-                    Port = servicePort2,
+                    Port = 50882,
                     ID = Guid.NewGuid().ToString(),
                     Tags = new string[0]
                 },
@@ -65,9 +63,9 @@
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -81,7 +79,6 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
-                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }
@@ -103,10 +100,9 @@
         [Fact]
         public void should_handle_request_to_consul_for_downstream_service_and_make_request()
         {
-            int consulPort = RandomPortFinder.GetRandomPort();
-            int servicePort = RandomPortFinder.GetRandomPort();
+            const int consulPort = 8505;
             const string serviceName = "web";
-            string downstreamServiceOneUrl = $"http://localhost:{servicePort}";
+            const string downstreamServiceOneUrl = "http://localhost:8080";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
             {
@@ -114,7 +110,7 @@
                 {
                     Service = serviceName,
                     Address = "localhost",
-                    Port = servicePort,
+                    Port = 8080,
                     ID = "web_90_0_2_224_8080",
                     Tags = new[] { "version-v1" }
                 },
@@ -122,9 +118,9 @@
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/home",
                             DownstreamScheme = "http",
@@ -138,7 +134,6 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
-                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }
@@ -159,9 +154,9 @@
         [Fact]
         public void should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes()
         {
-            int consulPort = RandomPortFinder.GetRandomPort();
+            const int consulPort = 8513;
             const string serviceName = "web";
-            int downstreamServicePort = RandomPortFinder.GetRandomPort();
+            const int downstreamServicePort = 8087;
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
@@ -182,7 +177,6 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
-                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     },
@@ -210,10 +204,10 @@
         [Fact]
         public void should_use_consul_service_discovery_and_load_balance_request_no_re_routes()
         {
-            var consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = 8510;
             var serviceName = "product";
-            var serviceOnePort = RandomPortFinder.GetRandomPort();
-            var serviceTwoPort = RandomPortFinder.GetRandomPort();
+            var serviceOnePort = 50888;
+            var serviceTwoPort = 50889;
             var downstreamServiceOneUrl = $"http://localhost:{serviceOnePort}";
             var downstreamServiceTwoUrl = $"http://localhost:{serviceTwoPort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -246,7 +240,6 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
-                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     },
@@ -271,10 +264,9 @@
         public void should_use_token_to_make_request_to_consul()
         {
             var token = "abctoken";
-            var consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = 8515;
             var serviceName = "web";
-            var servicePort = RandomPortFinder.GetRandomPort();
-            var downstreamServiceOneUrl = $"http://localhost:{servicePort}";
+            var downstreamServiceOneUrl = "http://localhost:8081";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
             {
@@ -282,7 +274,7 @@
                 {
                     Service = serviceName,
                     Address = "localhost",
-                    Port = servicePort,
+                    Port = 8081,
                     ID = "web_90_0_2_224_8080",
                     Tags = new[] { "version-v1" }
                 },
@@ -290,9 +282,9 @@
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/home",
                             DownstreamScheme = "http",
@@ -306,7 +298,6 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
-                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort,
                         Token = token
@@ -322,19 +313,17 @@
                 .When(_ => _steps.WhenIGetUrlOnTheApiGateway("/home"))
                 .Then(_ => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(_ => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(_ => ThenTheTokenIs(token))
+                .And(_ => _receivedToken.ShouldBe(token))
                 .BDDfy();
         }
 
         [Fact]
         public void should_send_request_to_service_after_it_becomes_available_in_consul()
         {
-            var consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = 8501;
             var serviceName = "product";
-            var servicePort1 = RandomPortFinder.GetRandomPort();
-            var servicePort2 = RandomPortFinder.GetRandomPort();
-            var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
-            var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
+            var downstreamServiceOneUrl = "http://localhost:50879";
+            var downstreamServiceTwoUrl = "http://localhost:50880";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
             {
@@ -342,7 +331,7 @@
                 {
                     Service = serviceName,
                     Address = "localhost",
-                    Port = servicePort1,
+                    Port = 50879,
                     ID = Guid.NewGuid().ToString(),
                     Tags = new string[0]
                 },
@@ -353,7 +342,7 @@
                 {
                     Service = serviceName,
                     Address = "localhost",
-                    Port = servicePort2,
+                    Port = 50880,
                     ID = Guid.NewGuid().ToString(),
                     Tags = new string[0]
                 },
@@ -361,9 +350,9 @@
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -377,7 +366,6 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
-                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort
                     }
@@ -408,9 +396,9 @@
         [Fact]
         public void should_handle_request_to_poll_consul_for_downstream_service_and_make_request()
         {
-            int consulPort = RandomPortFinder.GetRandomPort();
+            const int consulPort = 8518;
             const string serviceName = "web";
-            int downstreamServicePort = RandomPortFinder.GetRandomPort();
+            const int downstreamServicePort = 8082;
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry()
@@ -427,9 +415,9 @@
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/home",
                             DownstreamScheme = "http",
@@ -443,7 +431,6 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
-                        Scheme = "http",
                         Host = "localhost",
                         Port = consulPort,
                         Type = "PollConsul",
@@ -462,11 +449,6 @@
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
-        }
-
-        private void ThenTheTokenIs(string token)
-        {
-            _receivedToken.ShouldBe(token);
         }
 
         private void WhenIAddAServiceBackIn(ServiceEntry serviceEntryTwo)

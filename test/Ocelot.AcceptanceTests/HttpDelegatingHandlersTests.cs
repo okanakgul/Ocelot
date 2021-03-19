@@ -27,13 +27,11 @@
         [Fact]
         public void should_call_re_route_ordered_specific_handlers()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -42,7 +40,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 7197,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -56,7 +54,7 @@
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:7197", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithSpecficHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -69,13 +67,11 @@
         [Fact]
         public void should_call_global_di_handlers()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -84,7 +80,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 7187,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -93,7 +89,7 @@
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:7187", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -106,13 +102,11 @@
         [Fact]
         public void should_call_global_di_handlers_multiple_times()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -121,7 +115,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 9187,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -130,7 +124,7 @@
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:9187", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithGlobalHandlerRegisteredInDi<FakeHandlerAgain>())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -159,13 +153,11 @@
         [Fact]
         public void should_call_global_di_handlers_with_dependency()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -174,7 +166,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 7188,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -185,7 +177,7 @@
 
             var dependency = new FakeDependency();
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:7188", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandlerWithDependency>(dependency))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

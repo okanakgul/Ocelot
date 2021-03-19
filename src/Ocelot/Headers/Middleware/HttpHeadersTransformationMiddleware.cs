@@ -1,26 +1,23 @@
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using System.Threading.Tasks;
+
 namespace Ocelot.Headers.Middleware
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using System.Threading.Tasks;
-
     public class HttpHeadersTransformationMiddleware : OcelotMiddleware
     {
-        private readonly RequestDelegate _next;
+        private readonly OcelotRequestDelegate _next;
         private readonly IHttpContextRequestHeaderReplacer _preReplacer;
         private readonly IHttpResponseHeaderReplacer _postReplacer;
         private readonly IAddHeadersToResponse _addHeadersToResponse;
         private readonly IAddHeadersToRequest _addHeadersToRequest;
 
-        public HttpHeadersTransformationMiddleware(RequestDelegate next,
+        public HttpHeadersTransformationMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IHttpContextRequestHeaderReplacer preReplacer,
             IHttpResponseHeaderReplacer postReplacer,
             IAddHeadersToResponse addHeadersToResponse,
-            IAddHeadersToRequest addHeadersToRequest
-            )
+            IAddHeadersToRequest addHeadersToRequest)
                 : base(loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>())
         {
             _addHeadersToResponse = addHeadersToResponse;
@@ -30,33 +27,27 @@ namespace Ocelot.Headers.Middleware
             _preReplacer = preReplacer;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(DownstreamContext context)
         {
-            var downstreamRoute = httpContext.Items.DownstreamRoute();
-
-            var preFAndRs = downstreamRoute.UpstreamHeadersFindAndReplace;
+            var preFAndRs = context.DownstreamReRoute.UpstreamHeadersFindAndReplace;
 
             //todo - this should be on httprequestmessage not httpcontext?
-            _preReplacer.Replace(httpContext, preFAndRs);
+            _preReplacer.Replace(context.HttpContext, preFAndRs);
 
-            _addHeadersToRequest.SetHeadersOnDownstreamRequest(downstreamRoute.AddHeadersToUpstream, httpContext);
+            _addHeadersToRequest.SetHeadersOnDownstreamRequest(context.DownstreamReRoute.AddHeadersToUpstream, context.HttpContext);
 
-            await _next.Invoke(httpContext);
+            await _next.Invoke(context);
 
-            // todo check errors is ok
-            //todo put this check on the base class?
-            if (httpContext.Items.Errors().Count > 0)
+            if (context.IsError)
             {
                 return;
             }
 
-            var postFAndRs = downstreamRoute.DownstreamHeadersFindAndReplace;
+            var postFAndRs = context.DownstreamReRoute.DownstreamHeadersFindAndReplace;
 
-            _postReplacer.Replace(httpContext, postFAndRs);
+            _postReplacer.Replace(context, postFAndRs);
 
-            var downstreamResponse = httpContext.Items.DownstreamResponse();
-
-            _addHeadersToResponse.Add(downstreamRoute.AddHeadersToDownstream, downstreamResponse);
+            _addHeadersToResponse.Add(context.DownstreamReRoute.AddHeadersToDownstream, context.DownstreamResponse);
         }
     }
 }

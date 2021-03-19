@@ -11,7 +11,7 @@ namespace Ocelot.UnitTests.Configuration
     public class QoSOptionsCreatorTests
     {
         private QoSOptionsCreator _creator;
-        private FileRoute _fileRoute;
+        private FileReRoute _fileReRoute;
         private QoSOptions _result;
 
         public QoSOptionsCreatorTests()
@@ -22,7 +22,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_qos_options()
         {
-            var route = new FileRoute
+            var reRoute = new FileReRoute
             {
                 QoSOptions = new FileQoSOptions
                 {
@@ -37,20 +37,20 @@ namespace Ocelot.UnitTests.Configuration
                 .WithTimeoutValue(1)
                 .Build();
 
-            this.Given(x => x.GivenTheFollowingRoute(route))
+            this.Given(x => x.GivenTheFollowingReRoute(reRoute))
                 .When(x => x.WhenICreate())
                 .Then(x => x.ThenTheFollowingIsReturned(expected))
                 .BDDfy();
         }
 
-        private void GivenTheFollowingRoute(FileRoute fileRoute)
+        private void GivenTheFollowingReRoute(FileReRoute fileReRoute)
         {
-            _fileRoute = fileRoute;
+            _fileReRoute = fileReRoute;
         }
 
         private void WhenICreate()
         {
-            _result = _creator.Create(_fileRoute.QoSOptions);
+            _result = _creator.Create(_fileReRoute.QoSOptions);
         }
 
         private void ThenTheFollowingIsReturned(QoSOptions expected)

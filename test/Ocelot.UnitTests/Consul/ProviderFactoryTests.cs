@@ -31,11 +31,11 @@ namespace Ocelot.UnitTests.Consul
         [Fact]
         public void should_return_ConsulServiceDiscoveryProvider()
         {
-            var route = new DownstreamRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithServiceName("")
                 .Build();
 
-            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("", "", "", 1, "", "", 1), route);
+            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("", "", 1, "", "", 1), reRoute);
             provider.ShouldBeOfType<Consul>();
         }
 
@@ -44,11 +44,11 @@ namespace Ocelot.UnitTests.Consul
         {
             var stopsPollerFromPolling = 10000;
 
-            var route = new DownstreamRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithServiceName("")
                 .Build();
 
-            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("pollconsul", "http", "", 1, "", "", stopsPollerFromPolling), route);
+            var provider = ConsulProviderFactory.Get(_provider, new ServiceProviderConfiguration("pollconsul", "", 1, "", "", stopsPollerFromPolling), reRoute);
             var pollProvider = provider as PollConsul;
             pollProvider.ShouldNotBeNull();
             pollProvider.Dispose();

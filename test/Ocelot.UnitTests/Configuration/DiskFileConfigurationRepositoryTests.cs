@@ -3,7 +3,6 @@ namespace Ocelot.UnitTests.Configuration
     using Microsoft.AspNetCore.Hosting;
     using Moq;
     using Newtonsoft.Json;
-    using Ocelot.Configuration.ChangeTracking;
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Repository;
     using Shouldly;
@@ -17,7 +16,6 @@ namespace Ocelot.UnitTests.Configuration
     public class DiskFileConfigurationRepositoryTests : IDisposable
     {
         private readonly Mock<IWebHostEnvironment> _hostingEnvironment;
-        private readonly Mock<IOcelotConfigurationChangeTokenSource> _changeTokenSource;
         private IFileConfigurationRepository _repo;
         private string _environmentSpecificPath;
         private string _ocelotJsonPath;
@@ -37,9 +35,7 @@ namespace Ocelot.UnitTests.Configuration
             _semaphore.Wait();
             _hostingEnvironment = new Mock<IWebHostEnvironment>();
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
-            _changeTokenSource = new Mock<IOcelotConfigurationChangeTokenSource>(MockBehavior.Strict);
-            _changeTokenSource.Setup(m => m.Activate());
-            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object);
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
         }
 
         [Fact]
@@ -48,7 +44,7 @@ namespace Ocelot.UnitTests.Configuration
             var config = FakeFileConfigurationForGet();
 
             this.Given(_ => GivenTheConfigurationIs(config))
-                .When(_ => WhenIGetTheRoutes())
+                .When(_ => WhenIGetTheReRoutes())
                 .Then(_ => ThenTheFollowingIsReturned(config))
                 .BDDfy();
         }
@@ -60,7 +56,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenTheEnvironmentNameIsUnavailable())
                 .And(_ => GivenTheConfigurationIs(config))
-                .When(_ => WhenIGetTheRoutes())
+                .When(_ => WhenIGetTheReRoutes())
                 .Then(_ => ThenTheFollowingIsReturned(config))
                 .BDDfy();
         }
@@ -74,7 +70,6 @@ namespace Ocelot.UnitTests.Configuration
                 .When(_ => WhenISetTheConfiguration())
                 .Then(_ => ThenTheConfigurationIsStoredAs(config))
                 .And(_ => ThenTheConfigurationJsonIsIndented(config))
-                .And(x => AndTheChangeTokenIsActivated())
                 .BDDfy();
         }
 
@@ -122,7 +117,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _environmentName = null;
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
-            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object);
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object);
         }
 
         private void GivenIHaveAConfiguration(FileConfiguration fileConfiguration)
@@ -139,23 +134,22 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheConfigurationIsStoredAs(FileConfiguration expecteds)
         {
             _result.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
-            _result.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
-            for (var i = 0; i < _result.Routes.Count; i++)
+            for (var i = 0; i < _result.ReRoutes.Count; i++)
             {
-                for (int j = 0; j < _result.Routes[i].DownstreamHostAndPorts.Count; j++)
+                for (int j = 0; j < _result.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
                 {
-                    var result = _result.Routes[i].DownstreamHostAndPorts[j];
-                    var expected = expecteds.Routes[i].DownstreamHostAndPorts[j];
+                    var result = _result.ReRoutes[i].DownstreamHostAndPorts[j];
+                    var expected = expecteds.ReRoutes[i].DownstreamHostAndPorts[j];
 
                     result.Host.ShouldBe(expected.Host);
                     result.Port.ShouldBe(expected.Port);
                 }
 
-                _result.Routes[i].DownstreamPathTemplate.ShouldBe(expecteds.Routes[i].DownstreamPathTemplate);
-                _result.Routes[i].DownstreamScheme.ShouldBe(expecteds.Routes[i].DownstreamScheme);
+                _result.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].DownstreamPathTemplate);
+                _result.ReRoutes[i].DownstreamScheme.ShouldBe(expecteds.ReRoutes[i].DownstreamScheme);
             }
         }
 
@@ -189,7 +183,7 @@ namespace Ocelot.UnitTests.Configuration
             resultText.ShouldBe(expectedText);
         }
 
-        private void WhenIGetTheRoutes()
+        private void WhenIGetTheReRoutes()
         {
             _result = _repo.Get().Result.Data;
         }
@@ -197,36 +191,30 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheFollowingIsReturned(FileConfiguration expecteds)
         {
             _result.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
-            _result.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
             _result.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
-            for (var i = 0; i < _result.Routes.Count; i++)
+            for (var i = 0; i < _result.ReRoutes.Count; i++)
             {
-                for (int j = 0; j < _result.Routes[i].DownstreamHostAndPorts.Count; j++)
+                for (int j = 0; j < _result.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
                 {
-                    var result = _result.Routes[i].DownstreamHostAndPorts[j];
-                    var expected = expecteds.Routes[i].DownstreamHostAndPorts[j];
+                    var result = _result.ReRoutes[i].DownstreamHostAndPorts[j];
+                    var expected = expecteds.ReRoutes[i].DownstreamHostAndPorts[j];
 
                     result.Host.ShouldBe(expected.Host);
                     result.Port.ShouldBe(expected.Port);
                 }
 
-                _result.Routes[i].DownstreamPathTemplate.ShouldBe(expecteds.Routes[i].DownstreamPathTemplate);
-                _result.Routes[i].DownstreamScheme.ShouldBe(expecteds.Routes[i].DownstreamScheme);
+                _result.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].DownstreamPathTemplate);
+                _result.ReRoutes[i].DownstreamScheme.ShouldBe(expecteds.ReRoutes[i].DownstreamScheme);
             }
-        }
-
-        private void AndTheChangeTokenIsActivated()
-        {
-            _changeTokenSource.Verify(m => m.Activate(), Times.Once);
         }
 
         private FileConfiguration FakeFileConfigurationForSet()
         {
-            var routes = new List<FileRoute>
+            var reRoutes = new List<FileReRoute>
             {
-                new FileRoute
+                new FileReRoute
                 {
                     DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
@@ -234,18 +222,17 @@ namespace Ocelot.UnitTests.Configuration
                         {
                             Host = "123.12.12.12",
                             Port = 80,
-                        },
+                        }
                     },
                     DownstreamScheme = "https",
-                    DownstreamPathTemplate = "/asdfs/test/{test}",
-                },
+                    DownstreamPathTemplate = "/asdfs/test/{test}"
+                }
             };
 
             var globalConfiguration = new FileGlobalConfiguration
             {
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
-                    Scheme = "https",
                     Port = 198,
                     Host = "blah"
                 }
@@ -254,15 +241,15 @@ namespace Ocelot.UnitTests.Configuration
             return new FileConfiguration
             {
                 GlobalConfiguration = globalConfiguration,
-                Routes = routes
+                ReRoutes = reRoutes
             };
         }
 
         private FileConfiguration FakeFileConfigurationForGet()
         {
-            var routes = new List<FileRoute>
+            var reRoutes = new List<FileReRoute>
             {
-                new FileRoute
+                new FileReRoute
                 {
                     DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
@@ -281,7 +268,6 @@ namespace Ocelot.UnitTests.Configuration
             {
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
-                    Scheme = "https",
                     Port = 198,
                     Host = "blah"
                 }
@@ -290,7 +276,7 @@ namespace Ocelot.UnitTests.Configuration
             return new FileConfiguration
             {
                 GlobalConfiguration = globalConfiguration,
-                Routes = routes
+                ReRoutes = reRoutes
             };
         }
 

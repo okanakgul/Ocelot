@@ -1,9 +1,9 @@
-﻿namespace Ocelot.Cache
-{
-    using Ocelot.Request.Middleware;
+﻿using Ocelot.Middleware;
 
+namespace Ocelot.Cache
+{
     public interface ICacheKeyGenerator
     {
-        string GenerateRequestCacheKey(DownstreamRequest downstreamRequest);
+        string GenerateRequestCacheKey(DownstreamContext context);
     }
 }

@@ -5,7 +5,6 @@ using Ocelot.Headers;
 using Ocelot.Middleware;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Ocelot.Responder
@@ -65,24 +64,6 @@ namespace Ocelot.Responder
         public void SetErrorResponseOnContext(HttpContext context, int statusCode)
         {
             SetStatusCode(context, statusCode);
-        }
-
-        public async Task SetErrorResponseOnContext(HttpContext context, DownstreamResponse response)
-        {
-            var content = await response.Content.ReadAsStreamAsync();
-
-            if (response.Content.Headers.ContentLength != null)
-            {
-                AddHeaderIfDoesntExist(context, new Header("Content-Length", new[] { response.Content.Headers.ContentLength.ToString() }));
-            }
-
-            using (content)
-            {
-                if (context.Response.ContentLength != 0)
-                {
-                    await content.CopyToAsync(context.Response.Body);
-                }
-            }
         }
 
         private void SetStatusCode(HttpContext context, int statusCode)

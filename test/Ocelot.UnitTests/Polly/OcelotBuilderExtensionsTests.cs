@@ -24,7 +24,7 @@
                 .WithExceptionsAllowedBeforeBreaking(1)
                 .WithDurationOfBreak(200)
                 .Build();
-            var route = new DownstreamRouteBuilder().WithQosOptions(options)
+            var reRoute = new DownstreamReRouteBuilder().WithQosOptions(options)
                 .Build();
 
             var configuration = new ConfigurationBuilder()
@@ -38,7 +38,7 @@
             var handler = provider.GetService<QosDelegatingHandlerDelegate>();
             handler.ShouldNotBeNull();
 
-            var delgatingHandler = handler(route, loggerFactory.Object);
+            var delgatingHandler = handler(reRoute, loggerFactory.Object);
             delgatingHandler.ShouldNotBeNull();
         }
     }

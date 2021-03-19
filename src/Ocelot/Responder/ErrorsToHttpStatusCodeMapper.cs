@@ -14,17 +14,12 @@ namespace Ocelot.Responder
             }
 
             if (errors.Any(e => e.Code == OcelotErrorCode.UnauthorizedError
-                || e.Code == OcelotErrorCode.ClaimValueNotAuthorizedError
-                || e.Code == OcelotErrorCode.ScopeNotAuthorizedError
+                || e.Code == OcelotErrorCode.ClaimValueNotAuthorisedError
+                || e.Code == OcelotErrorCode.ScopeNotAuthorisedError
                 || e.Code == OcelotErrorCode.UserDoesNotHaveClaimError
                 || e.Code == OcelotErrorCode.CannotFindClaimError))
             {
                 return 403;
-            }
-
-            if (errors.Any(e => e.Code == OcelotErrorCode.QuotaExceededError))
-            {
-                return errors.Single(e => e.Code == OcelotErrorCode.QuotaExceededError).HttpStatusCode;
             }
 
             if (errors.Any(e => e.Code == OcelotErrorCode.RequestTimedOutError))
@@ -45,14 +40,7 @@ namespace Ocelot.Responder
                 return 404;
             }
 
-            if (errors.Any(e => e.Code == OcelotErrorCode.ConnectionToDownstreamServiceError))
-            {
-                return 502;
-            }
-
-            if (errors.Any(e => e.Code == OcelotErrorCode.UnableToCompleteRequestError
-                || e.Code == OcelotErrorCode.CouldNotFindLoadBalancerCreator
-                || e.Code == OcelotErrorCode.ErrorInvokingLoadBalancerCreator))
+            if (errors.Any(e => e.Code == OcelotErrorCode.UnableToCompleteRequestError))
             {
                 return 500;
             }

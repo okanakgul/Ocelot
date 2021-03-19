@@ -1,10 +1,10 @@
+using Ocelot.Middleware.Pipeline;
+
 namespace Ocelot.WebSockets.Middleware
 {
-    using Microsoft.AspNetCore.Builder;
-
     public static class WebSocketsProxyMiddlewareExtensions
     {
-        public static IApplicationBuilder UseWebSocketsProxyMiddleware(this IApplicationBuilder builder)
+        public static IOcelotPipelineBuilder UseWebSocketsProxyMiddleware(this IOcelotPipelineBuilder builder)
         {
             return builder.UseMiddleware<WebSocketsProxyMiddleware>();
         }

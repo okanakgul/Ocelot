@@ -24,12 +24,12 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_match_forward_slash_in_pattern_before_next_forward_slash()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = 31879;
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/v{apiVersion}/cards",
                             DownstreamScheme = "http",
@@ -69,13 +69,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_forward_slash_and_placeholder_only()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/{url}",
                             DownstreamScheme = "http",
@@ -86,14 +84,14 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             }
                         }
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -105,63 +103,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_favouring_forward_slash_with_path_route()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/{url}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                }
-                            },
-                            UpstreamPathTemplate = "/{url}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = 50810,
-                                }
-                            },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/test", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/test"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_response_200_favouring_forward_slash()
-        {
-            var port = RandomPortFinder.GetRandomPort();
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/{url}",
                             DownstreamScheme = "http",
@@ -176,7 +122,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamPathTemplate = "/{url}",
                             UpstreamHttpMethod = new List<string> { "Get" },
                         },
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -185,7 +131,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -194,7 +140,56 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51880/", "/test", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/test"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_response_200_favouring_forward_slash()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/{url}",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51880,
+                                }
+                            },
+                            UpstreamPathTemplate = "/{url}",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51879,
+                                }
+                            },
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -206,13 +201,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_favouring_forward_slash_route_because_it_is_first()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -221,13 +214,13 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51880,
                                 }
                             },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
                         },
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/{url}",
                             DownstreamScheme = "http",
@@ -245,7 +238,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51880/", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -257,13 +250,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_nothing_and_placeholder_only()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/{url}",
                             DownstreamScheme = "http",
@@ -272,7 +263,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamPathTemplate = "/{url}",
@@ -281,7 +272,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway(""))
@@ -293,13 +284,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -308,7 +297,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -317,7 +306,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -329,13 +318,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void bug()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/v1/vacancy",
                         DownstreamScheme = "http",
@@ -344,14 +331,14 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 51874,
                             }
                         },
                         UpstreamPathTemplate = "/vacancy/",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     },
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/v1/vacancy/{vacancyId}",
                         DownstreamScheme = "http",
@@ -360,7 +347,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 51874,
                             }
                         },
                         UpstreamPathTemplate = "/vacancy/{vacancyId}",
@@ -370,7 +357,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/v1/vacancy/1", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51874", "/api/v1/vacancy/1", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/vacancy/1"))
@@ -382,13 +369,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_path_missing_forward_slash_as_first_char()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/products",
                             DownstreamScheme = "http",
@@ -397,7 +382,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -406,7 +391,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -418,13 +403,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_host_has_trailing_slash()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/products",
                             DownstreamScheme = "http",
@@ -433,7 +416,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -442,7 +425,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -454,13 +437,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_ok_when_upstream_url_ends_with_forward_slash_but_template_does_not()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/products",
                             DownstreamScheme = "http",
@@ -469,7 +450,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamPathTemplate = "/products/",
@@ -478,7 +459,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products"))
@@ -490,13 +471,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_not_found_when_upstream_url_ends_with_forward_slash_but_template_does_not()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/products",
                             DownstreamScheme = "http",
@@ -505,7 +484,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamPathTemplate = "/products",
@@ -514,7 +493,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
@@ -525,13 +504,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_not_found()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/products",
                         DownstreamScheme = "http",
@@ -540,7 +517,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 51879,
                             }
                         },
                         UpstreamPathTemplate = "/products/{productId}",
@@ -549,7 +526,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/products", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
@@ -560,13 +537,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_complex_url()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/products/{productId}",
                             DownstreamScheme = "http",
@@ -575,7 +550,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamPathTemplate = "/products/{productId}",
@@ -584,7 +559,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/1"))
@@ -596,13 +571,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_complex_url_that_starts_with_placeholder()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/{variantId}/products/{productId}",
                             DownstreamScheme = "http",
@@ -611,7 +584,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamPathTemplate = "/{variantId}/products/{productId}",
@@ -620,7 +593,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/23/products/1", 200, "Some Product"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/23/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("23/products/1"))
@@ -632,13 +605,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_add_trailing_slash_to_downstream_url()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/products/{productId}",
                             DownstreamScheme = "http",
@@ -647,7 +618,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamPathTemplate = "/products/{productId}",
@@ -656,7 +627,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
+            this.Given(x => GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/1"))
@@ -667,13 +638,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_201_with_simple_url()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -681,7 +650,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -691,7 +660,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 201, string.Empty))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 201, string.Empty))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
@@ -703,13 +672,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_201_with_complex_query_string()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/newThing",
                             UpstreamPathTemplate = "/newThing",
@@ -719,7 +686,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamHttpMethod = new List<string> { "Get" },
@@ -727,7 +694,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/newThing", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/newThing", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/newThing?DeviceType=IphoneApp&Browser=moonpigIphone&BrowserString=-&CountryCode=123&DeviceName=iPhone 5 (GSM+CDMA)&OperatingSystem=iPhone OS 7.1.2&BrowserVersion=3708AdHoc&ipAddress=-"))
@@ -739,13 +706,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_placeholder_for_final_url_path()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/{urlPath}",
                             DownstreamScheme = "http",
@@ -754,7 +719,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             UpstreamPathTemplate = "/myApp1Name/api/{urlPath}",
@@ -763,7 +728,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/products/1", 200, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/myApp1Name/api/products/1"))
@@ -775,13 +740,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_201_with_simple_url_and_multiple_upstream_http_method()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -789,7 +752,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -799,7 +762,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "", 201, string.Empty))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "", 201, string.Empty))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
@@ -811,13 +774,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url_and_any_upstream_http_method()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -825,7 +786,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51879,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -835,7 +796,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -847,13 +808,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_404_when_calling_upstream_route_with_no_matching_downstream_re_route_github_issue_134()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/v1/vacancy",
                         DownstreamScheme = "http",
@@ -862,14 +821,14 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 51879,
                             }
                         },
                         UpstreamPathTemplate = "/vacancy/",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
                         LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     },
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/v1/vacancy/{vacancyId}",
                         DownstreamScheme = "http",
@@ -878,7 +837,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 51879,
                             }
                         },
                         UpstreamPathTemplate = "/vacancy/{vacancyId}",
@@ -888,7 +847,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/v1/vacancy/1", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/v1/vacancy/1", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("api/vacancy/1"))
@@ -899,13 +858,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_set_trailing_slash_on_url_template()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/{url}",
                             DownstreamScheme = "http",
@@ -914,7 +871,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 51899,
                                 }
                             },
                             UpstreamPathTemplate = "/platform/{url}",
@@ -923,7 +880,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/swagger/lib/backbone-min.js", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51899", "/api/swagger/lib/backbone-min.js", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/platform/swagger/lib/backbone-min.js"))
@@ -936,13 +893,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_priority()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/goods/{url}",
                             DownstreamScheme = "http",
@@ -958,7 +913,7 @@ namespace Ocelot.AcceptanceTests
                             },
                             Priority = 0
                         },
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/goods/delete",
                             DownstreamScheme = "http",
@@ -969,14 +924,14 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 52879,
                                 }
                             },
                         }
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/goods/delete", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:52879/", "/goods/delete", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/goods/delete"))
@@ -988,13 +943,12 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_match_multiple_paths_with_catch_all()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
+            var port = 61999;
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/{everything}",
                             DownstreamScheme = "http",
@@ -1024,13 +978,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_fix_issue_271()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/v1/{everything}",
                             DownstreamScheme = "http",
@@ -1041,11 +993,11 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 54879,
                                 }
                             },
                         },
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/connect/token",
                             DownstreamScheme = "http",
@@ -1063,7 +1015,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/api/v1/modules/Test", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:54879/", "/api/v1/modules/Test", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/v1/modules/Test"))

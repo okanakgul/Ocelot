@@ -1,19 +1,16 @@
-﻿namespace Ocelot.DownstreamPathManipulation.Middleware
-{
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Ocelot.Logging;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Middleware;
-    using Ocelot.PathManipulation;
-    using Ocelot.DownstreamRouteFinder.Middleware;
+﻿using Ocelot.Logging;
+using Ocelot.Middleware;
+using System.Linq;
+using System.Threading.Tasks;
 
+namespace Ocelot.PathManipulation.Middleware
+{
     public class ClaimsToDownstreamPathMiddleware : OcelotMiddleware
     {
-        private readonly RequestDelegate _next;
+        private readonly OcelotRequestDelegate _next;
         private readonly IChangeDownstreamPathTemplate _changeDownstreamPathTemplate;
 
-        public ClaimsToDownstreamPathMiddleware(RequestDelegate next,
+        public ClaimsToDownstreamPathMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IChangeDownstreamPathTemplate changeDownstreamPathTemplate)
                 : base(loggerFactory.CreateLogger<ClaimsToDownstreamPathMiddleware>())
@@ -22,29 +19,24 @@
             _changeDownstreamPathTemplate = changeDownstreamPathTemplate;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(DownstreamContext context)
         {
-            var downstreamRoute = httpContext.Items.DownstreamRoute();
-
-            if (downstreamRoute.ClaimsToPath.Any())
+            if (context.DownstreamReRoute.ClaimsToPath.Any())
             {
-                Logger.LogInformation($"{downstreamRoute.DownstreamPathTemplate.Value} has instructions to convert claims to path");
-
-                var templatePlaceholderNameAndValues = httpContext.Items.TemplatePlaceholderNameAndValues();
-
-                var response = _changeDownstreamPathTemplate.ChangeDownstreamPath(downstreamRoute.ClaimsToPath, httpContext.User.Claims,
-                    downstreamRoute.DownstreamPathTemplate, templatePlaceholderNameAndValues);
+                Logger.LogInformation($"{context.DownstreamReRoute.DownstreamPathTemplate.Value} has instructions to convert claims to path");
+                var response = _changeDownstreamPathTemplate.ChangeDownstreamPath(context.DownstreamReRoute.ClaimsToPath, context.HttpContext.User.Claims,
+                                    context.DownstreamReRoute.DownstreamPathTemplate, context.TemplatePlaceholderNameAndValues);
 
                 if (response.IsError)
                 {
                     Logger.LogWarning("there was an error setting queries on context, setting pipeline error");
 
-                    httpContext.Items.UpsertErrors(response.Errors);
+                    SetPipelineError(context, response.Errors);
                     return;
                 }
             }
 
-            await _next.Invoke(httpContext);
+            await _next.Invoke(context);
         }
     }
 }

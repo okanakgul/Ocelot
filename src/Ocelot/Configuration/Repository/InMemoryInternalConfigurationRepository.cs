@@ -1,5 +1,4 @@
-﻿using Ocelot.Configuration.ChangeTracking;
-using Ocelot.Responses;
+﻿using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Repository
 {
@@ -11,12 +10,6 @@ namespace Ocelot.Configuration.Repository
         private static readonly object LockObject = new object();
 
         private IInternalConfiguration _internalConfiguration;
-        private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
-
-        public InMemoryInternalConfigurationRepository(IOcelotConfigurationChangeTokenSource changeTokenSource)
-        {
-            _changeTokenSource = changeTokenSource;
-        }
 
         public Response<IInternalConfiguration> Get()
         {
@@ -30,7 +23,6 @@ namespace Ocelot.Configuration.Repository
                 _internalConfiguration = internalConfiguration;
             }
 
-            _changeTokenSource.Activate();
             return new OkResponse();
         }
     }

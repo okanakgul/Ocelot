@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
@@ -28,7 +27,7 @@ namespace Ocelot.UnitTests.Requester
         private readonly Mock<IDelegatingHandlerHandlerFactory> _factory;
         private IHttpClient _httpClient;
         private HttpResponseMessage _response;
-        private HttpContext _context;
+        private DownstreamContext _context;
         private readonly Mock<IHttpClientCache> _cacheHandlers;
         private readonly Mock<IOcelotLogger> _logger;
         private int _count;
@@ -51,16 +50,16 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var route = new DownstreamRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
             this.Given(x => GivenTheFactoryReturns())
-                .And(x => GivenARequest(route))
+                .And(x => GivenARequest(reRoute))
                 .When(x => WhenIBuild())
                 .Then(x => ThenTheHttpClientShouldNotBeNull())
                 .BDDfy();
@@ -72,9 +71,9 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var route = new DownstreamRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -82,7 +81,7 @@ namespace Ocelot.UnitTests.Requester
 
             this.Given(x => GivenARealCache())
                 .And(x => GivenTheFactoryReturns())
-                .And(x => GivenARequest(route))
+                .And(x => GivenARequest(reRoute))
                 .And(x => WhenIBuildTheFirstTime())
                 .And(x => WhenISave())
                 .And(x => WhenIBuildAgain())
@@ -98,9 +97,9 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var route = new DownstreamRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -108,11 +107,11 @@ namespace Ocelot.UnitTests.Requester
 
             this.Given(x => GivenARealCache())
                 .And(x => GivenTheFactoryReturns())
-                .And(x => GivenARequest(route, "http://wwww.someawesomewebsite.com/woot?badman=1"))
+                .And(x => GivenARequest(reRoute, "http://wwww.someawesomewebsite.com/woot?badman=1"))
                 .And(x => WhenIBuildTheFirstTime())
                 .And(x => WhenISave())
                 .And(x => WhenIBuildAgain())
-                .And(x => GivenARequest(route, "http://wwww.someawesomewebsite.com/woot?badman=2"))
+                .And(x => GivenARequest(reRoute, "http://wwww.someawesomewebsite.com/woot?badman=2"))
                 .And(x => WhenISave())
                 .When(x => WhenIBuildAgain())
                 .Then(x => ThenTheHttpClientIsFromTheCache())
@@ -125,17 +124,17 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var routeA = new DownstreamRouteBuilder()
+            var reRouteA = new DownstreamReRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithContainsQueryString(true).WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
-            var routeB = new DownstreamRouteBuilder()
+            var reRouteB = new DownstreamReRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithContainsQueryString(true).WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -143,11 +142,11 @@ namespace Ocelot.UnitTests.Requester
 
             this.Given(x => GivenARealCache())
                 .And(x => GivenTheFactoryReturns())
-                .And(x => GivenARequest(routeA, "http://wwww.someawesomewebsite.com/woot?badman=1"))
+                .And(x => GivenARequest(reRouteA, "http://wwww.someawesomewebsite.com/woot?badman=1"))
                 .And(x => WhenIBuildTheFirstTime())
                 .And(x => WhenISave())
                 .And(x => WhenIBuildAgain())
-                .And(x => GivenARequest(routeB, "http://wwww.someawesomewebsite.com/woot?badman=2"))
+                .And(x => GivenARequest(reRouteB, "http://wwww.someawesomewebsite.com/woot?badman=2"))
                 .And(x => WhenISave())
                 .When(x => WhenIBuildAgain())
                 .Then(x => ThenTheHttpClientIsNotFromTheCache())
@@ -160,9 +159,9 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var route = new DownstreamRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -170,7 +169,7 @@ namespace Ocelot.UnitTests.Requester
                 .Build();
 
             this.Given(x => GivenTheFactoryReturns())
-                .And(x => GivenARequest(route))
+                .And(x => GivenARequest(reRoute))
                 .When(x => WhenIBuild())
                 .Then(x => ThenTheHttpClientShouldNotBeNull())
                 .Then(x => ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged())
@@ -183,9 +182,9 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var route = new DownstreamRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -201,7 +200,7 @@ namespace Ocelot.UnitTests.Requester
             };
 
             this.Given(x => GivenTheFactoryReturns(handlers))
-                .And(x => GivenARequest(route))
+                .And(x => GivenARequest(reRoute))
                 .And(x => WhenIBuild())
                 .When(x => WhenICallTheClient())
                 .Then(x => ThenTheFakeAreHandledInOrder(fakeOne, fakeTwo))
@@ -215,16 +214,16 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var route = new DownstreamRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true))
                 .WithLoadBalancerKey("")
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
             this.Given(_ => GivenADownstreamService())
-                .And(_ => GivenARequest(route))
+                .And(_ => GivenARequest(reRoute))
                 .And(_ => GivenTheFactoryReturnsNothing())
                 .And(_ => WhenIBuild())
                 .And(_ => WhenICallTheClient("http://localhost:5003"))
@@ -251,16 +250,16 @@ namespace Ocelot.UnitTests.Requester
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
 
-            var route = new DownstreamRouteBuilder()
+            var reRoute = new DownstreamReRouteBuilder()
                 .WithQosOptions(qosOptions)
-                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
+                .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true))
                 .WithLoadBalancerKey("")
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("").Build())
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
             this.Given(_ => GivenADownstreamService())
-                .And(_ => GivenARequestWithAUrlAndMethod(route, downstreamUrl, method))
+                .And(_ => GivenARequestWithAUrlAndMethod(reRoute, downstreamUrl, method))
                 .And(_ => GivenTheFactoryReturnsNothing())
                 .And(_ => WhenIBuild())
                 .And(_ => GivenCacheIsCalledWithExpectedKey($"{method.ToString()}:{downstreamUrl}"))
@@ -290,17 +289,17 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenCacheIsCalledWithExpectedKey(string expectedKey)
         {
-            _cacheHandlers.Verify(x => x.Get(It.IsAny<DownstreamRoute>()), Times.Once);
+            _cacheHandlers.Verify(x => x.Get(It.IsAny<DownstreamReRoute>()), Times.Once);
         }
 
         private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
         {
-            _logger.Verify(x => x.LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {_context.Items.DownstreamRoute().UpstreamPathTemplate}, DownstreamPathTemplate: {_context.Items.DownstreamRoute().DownstreamPathTemplate}"), Times.Once);
+            _logger.Verify(x => x.LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamReRoute, UpstreamPathTemplate: {_context.DownstreamReRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {_context.DownstreamReRoute.DownstreamPathTemplate}"), Times.Once);
         }
 
         private void GivenTheClientIsCached()
         {
-            _cacheHandlers.Setup(x => x.Get(It.IsAny<DownstreamRoute>())).Returns(_httpClient);
+            _cacheHandlers.Setup(x => x.Get(It.IsAny<DownstreamReRoute>())).Returns(_httpClient);
         }
 
         private void ThenTheCookieIsSet()
@@ -359,21 +358,25 @@ namespace Ocelot.UnitTests.Requester
             _host.Start();
         }
 
-        private void GivenARequest(DownstreamRoute downstream)
+        private void GivenARequest(DownstreamReRoute downstream)
         {
             GivenARequest(downstream, "http://localhost:5003");
         }
 
-        private void GivenARequest(DownstreamRoute downstream, string downstreamUrl)
+        private void GivenARequest(DownstreamReRoute downstream, string downstreamUrl)
         {
             GivenARequestWithAUrlAndMethod(downstream, downstreamUrl, HttpMethod.Get);
         }
 
-        private void GivenARequestWithAUrlAndMethod(DownstreamRoute downstream, string url, HttpMethod method)
+        private void GivenARequestWithAUrlAndMethod(DownstreamReRoute downstream, string url, HttpMethod method)
         {
-            _context = new DefaultHttpContext();
-            _context.Items.UpsertDownstreamRoute(downstream);
-            _context.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri(url), Method = method }));
+            var context = new DownstreamContext(new DefaultHttpContext())
+            {
+                DownstreamReRoute = downstream,
+                DownstreamRequest = new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri(url), Method = method }),
+            };
+
+            _context = context;
         }
 
         private void ThenSomethingIsReturned()
@@ -396,7 +399,7 @@ namespace Ocelot.UnitTests.Requester
             var handlers = new List<Func<DelegatingHandler>>() { () => new FakeDelegatingHandler() };
 
             _factory
-                .Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
+                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
                 .Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
         }
 
@@ -405,31 +408,31 @@ namespace Ocelot.UnitTests.Requester
             var handlers = new List<Func<DelegatingHandler>>();
 
             _factory
-                .Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
+                .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
                 .Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
         }
 
         private void GivenTheFactoryReturns(List<Func<DelegatingHandler>> handlers)
         {
             _factory
-               .Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
+               .Setup(x => x.Get(It.IsAny<DownstreamReRoute>()))
                .Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
         }
 
         private void WhenIBuild()
         {
-            _httpClient = _builder.Create(_context.Items.DownstreamRoute());
+            _httpClient = _builder.Create(_context);
         }
 
         private void WhenIBuildTheFirstTime()
         {
-            _firstHttpClient = _builder.Create(_context.Items.DownstreamRoute());
+            _firstHttpClient = _builder.Create(_context);
         }
 
         private void WhenIBuildAgain()
         {
             _builder = new HttpClientBuilder(_factory.Object, _realCache, _logger.Object);
-            _againHttpClient = _builder.Create(_context.Items.DownstreamRoute());
+            _againHttpClient = _builder.Create(_context);
         }
 
         private void ThenTheHttpClientShouldNotBeNull()

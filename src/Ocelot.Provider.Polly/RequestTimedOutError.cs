@@ -1,12 +1,12 @@
 ﻿namespace Ocelot.Provider.Polly
 {
-    using Ocelot.Errors;
+    using Errors;
     using System;
 
     public class RequestTimedOutError : Error
     {
         public RequestTimedOutError(Exception exception)
-            : base($"Timeout making http request, exception: {exception}", OcelotErrorCode.RequestTimedOutError, 503)
+            : base($"Timeout making http request, exception: {exception}", OcelotErrorCode.RequestTimedOutError)
         {
         }
     }

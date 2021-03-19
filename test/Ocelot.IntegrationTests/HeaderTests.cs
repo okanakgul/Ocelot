@@ -34,7 +34,7 @@ namespace Ocelot.IntegrationTests
         public HeaderTests()
         {
             _httpClient = new HttpClient();
-            _ocelotBaseUrl = "http://localhost:5010";
+            _ocelotBaseUrl = "http://localhost:5005";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
         }
 
@@ -43,9 +43,9 @@ namespace Ocelot.IntegrationTests
         {
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -161,7 +161,7 @@ namespace Ocelot.IntegrationTests
             text = File.ReadAllText(configurationPath);
         }
 
-        private async Task WhenIGetUrlOnTheApiGateway(string url)
+        public async Task WhenIGetUrlOnTheApiGateway(string url)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             _response = await _httpClient.SendAsync(request);

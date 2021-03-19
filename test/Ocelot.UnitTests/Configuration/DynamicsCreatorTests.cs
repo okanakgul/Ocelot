@@ -1,6 +1,5 @@
 ﻿namespace Ocelot.UnitTests.Configuration
 {
-    using System;
     using Moq;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Builder;
@@ -15,18 +14,15 @@
     {
         private readonly DynamicsCreator _creator;
         private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
-        private readonly Mock<IVersionCreator> _versionCreator;
-        private List<Route> _result;
+        private List<ReRoute> _result;
         private FileConfiguration _fileConfig;
         private RateLimitOptions _rlo1;
         private RateLimitOptions _rlo2;
-        private Version _version;
 
         public DynamicsCreatorTests()
         {
-            _versionCreator = new Mock<IVersionCreator>();
             _rloCreator = new Mock<IRateLimitOptionsCreator>();
-            _creator = new DynamicsCreator(_rloCreator.Object, _versionCreator.Object);
+            _creator = new DynamicsCreator(_rloCreator.Object);
         }
 
         [Fact]
@@ -46,72 +42,54 @@
         {
             var fileConfig = new FileConfiguration
             {
-                DynamicRoutes = new List<FileDynamicRoute>
+                DynamicReRoutes = new List<FileDynamicReRoute>
                 {
-                    new FileDynamicRoute
+                    new FileDynamicReRoute
                     {
                         ServiceName = "1",
                         RateLimitRule = new FileRateLimitRule
                         {
                             EnableRateLimiting = false
-                        },
-                        DownstreamHttpVersion = "1.1"
+                        }
                     },
-                    new FileDynamicRoute
+                    new FileDynamicReRoute
                     {
                         ServiceName = "2",
                         RateLimitRule = new FileRateLimitRule
                         {
                             EnableRateLimiting = true
-                        },
-                        DownstreamHttpVersion = "2.0"
+                        }
                     }
                 }
             };
 
             this.Given(_ => GivenThe(fileConfig))
                 .And(_ => GivenTheRloCreatorReturns())
-                .And(_ => GivenTheVersionCreatorReturns())
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheRoutesAreReturned())
+                .Then(_ => ThenTheReRoutesAreReturned())
                 .And(_ => ThenTheRloCreatorIsCalledCorrectly())
-                .And(_ => ThenTheVersionCreatorIsCalledCorrectly())
                 .BDDfy();
         }
 
         private void ThenTheRloCreatorIsCalledCorrectly()
         {
-            _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].RateLimitRule,
+            _rloCreator.Verify(x => x.Create(_fileConfig.DynamicReRoutes[0].RateLimitRule,
                 _fileConfig.GlobalConfiguration), Times.Once);
 
-            _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].RateLimitRule,
+            _rloCreator.Verify(x => x.Create(_fileConfig.DynamicReRoutes[1].RateLimitRule,
                 _fileConfig.GlobalConfiguration), Times.Once);
         }
 
-        private void ThenTheVersionCreatorIsCalledCorrectly()
-        {
-            _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamHttpVersion), Times.Once);
-            _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamHttpVersion), Times.Once);
-        }
-
-        private void ThenTheRoutesAreReturned()
+        private void ThenTheReRoutesAreReturned()
         {
             _result.Count.ShouldBe(2);
-            _result[0].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeFalse();
-            _result[0].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo1);
-            _result[0].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
-            _result[0].DownstreamRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicRoutes[0].ServiceName);
+            _result[0].DownstreamReRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeFalse();
+            _result[0].DownstreamReRoute[0].RateLimitOptions.ShouldBe(_rlo1);
+            _result[0].DownstreamReRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicReRoutes[0].ServiceName);
 
-            _result[1].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeTrue();
-            _result[1].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo2);
-            _result[1].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
-            _result[1].DownstreamRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicRoutes[1].ServiceName);
-        }
-
-        private void GivenTheVersionCreatorReturns()
-        {
-            _version = new Version("1.1");
-            _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_version);
+            _result[1].DownstreamReRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeTrue();
+            _result[1].DownstreamReRoute[0].RateLimitOptions.ShouldBe(_rlo2);
+            _result[1].DownstreamReRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicReRoutes[1].ServiceName);
         }
 
         private void GivenTheRloCreatorReturns()

@@ -14,23 +14,23 @@ namespace Ocelot.Provider.Polly
         private readonly AsyncTimeoutPolicy _timeoutPolicy;
         private readonly IOcelotLogger _logger;
 
-        public PollyQoSProvider(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
+        public PollyQoSProvider(DownstreamReRoute reRoute, IOcelotLoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<PollyQoSProvider>();
 
-            Enum.TryParse(route.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
+            Enum.TryParse(reRoute.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
 
-            _timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), strategy);
+            _timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(reRoute.QosOptions.TimeoutValue), strategy);
 
-            if (route.QosOptions.ExceptionsAllowedBeforeBreaking > 0)
+            if (reRoute.QosOptions.ExceptionsAllowedBeforeBreaking > 0)
             {
                 _circuitBreakerPolicy = Policy
                     .Handle<HttpRequestException>()
                     .Or<TimeoutRejectedException>()
                     .Or<TimeoutException>()
                     .CircuitBreakerAsync(
-                        exceptionsAllowedBeforeBreaking: route.QosOptions.ExceptionsAllowedBeforeBreaking,
-                        durationOfBreak: TimeSpan.FromMilliseconds(route.QosOptions.DurationOfBreak),
+                        exceptionsAllowedBeforeBreaking: reRoute.QosOptions.ExceptionsAllowedBeforeBreaking,
+                        durationOfBreak: TimeSpan.FromMilliseconds(reRoute.QosOptions.DurationOfBreak),
                         onBreak: (ex, breakDelay) =>
                         {
                             _logger.LogError(

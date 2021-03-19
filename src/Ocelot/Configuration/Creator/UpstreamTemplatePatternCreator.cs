@@ -13,9 +13,9 @@ namespace Ocelot.Configuration.Creator
         private const string RegExForwardSlashOnly = "^/$";
         private const string RegExForwardSlashAndOnePlaceHolder = "^/.*";
 
-        public UpstreamPathTemplate Create(IRoute route)
+        public UpstreamPathTemplate Create(IReRoute reRoute)
         {
-            var upstreamTemplate = route.UpstreamPathTemplate;
+            var upstreamTemplate = reRoute.UpstreamPathTemplate;
 
             var placeholders = new List<string>();
 
@@ -31,7 +31,7 @@ namespace Ocelot.Configuration.Creator
                     //hack to handle /{url} case
                     if (ForwardSlashAndOnePlaceHolder(upstreamTemplate, placeholders, postitionOfPlaceHolderClosingBracket))
                     {
-                        return new UpstreamPathTemplate(RegExForwardSlashAndOnePlaceHolder, 0, false, route.UpstreamPathTemplate);
+                        return new UpstreamPathTemplate(RegExForwardSlashAndOnePlaceHolder, 0, false, reRoute.UpstreamPathTemplate);
                     }
                 }
             }
@@ -60,7 +60,7 @@ namespace Ocelot.Configuration.Creator
 
             if (upstreamTemplate == "/")
             {
-                return new UpstreamPathTemplate(RegExForwardSlashOnly, route.Priority, containsQueryString, route.UpstreamPathTemplate);
+                return new UpstreamPathTemplate(RegExForwardSlashOnly, reRoute.Priority, containsQueryString, reRoute.UpstreamPathTemplate);
             }
 
             if (upstreamTemplate.EndsWith("/"))
@@ -68,11 +68,11 @@ namespace Ocelot.Configuration.Creator
                 upstreamTemplate = upstreamTemplate.Remove(upstreamTemplate.Length - 1, 1) + "(/|)";
             }
 
-            var template = route.RouteIsCaseSensitive
+            var route = reRoute.ReRouteIsCaseSensitive
                 ? $"^{upstreamTemplate}{RegExMatchEndString}"
                 : $"^{RegExIgnoreCase}{upstreamTemplate}{RegExMatchEndString}";
 
-            return new UpstreamPathTemplate(template, route.Priority, containsQueryString, route.UpstreamPathTemplate);
+            return new UpstreamPathTemplate(route, reRoute.Priority, containsQueryString, reRoute.UpstreamPathTemplate);
         }
 
         private bool ForwardSlashAndOnePlaceHolder(string upstreamTemplate, List<string> placeholders, int postitionOfPlaceHolderClosingBracket)

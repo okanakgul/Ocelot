@@ -4,6 +4,6 @@ namespace Ocelot.Cache
 {
     public interface IRegionCreator
     {
-        string Create(FileRoute route);
+        string Create(FileReRoute reRoute);
     }
 }

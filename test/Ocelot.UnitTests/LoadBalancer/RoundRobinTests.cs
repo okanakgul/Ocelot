@@ -17,11 +17,12 @@ namespace Ocelot.UnitTests.LoadBalancer
         private readonly RoundRobin _roundRobin;
         private readonly List<Service> _services;
         private Response<ServiceHostAndPort> _hostAndPort;
-        private HttpContext _httpContext;
+        private DownstreamContext _context;
 
         public RoundRobinTests()
         {
-            _httpContext = new DefaultHttpContext();
+            _context = new DownstreamContext(new DefaultHttpContext());
+
             _services = new List<Service>
             {
                 new Service("product", new ServiceHostAndPort("127.0.0.1", 5000), string.Empty, string.Empty, new string[0]),
@@ -51,18 +52,18 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             while (stopWatch.ElapsedMilliseconds < 1000)
             {
-                var address = _roundRobin.Lease(_httpContext).Result;
+                var address = _roundRobin.Lease(_context).Result;
                 address.Data.ShouldBe(_services[0].HostAndPort);
-                address = _roundRobin.Lease(_httpContext).Result;
+                address = _roundRobin.Lease(_context).Result;
                 address.Data.ShouldBe(_services[1].HostAndPort);
-                address = _roundRobin.Lease(_httpContext).Result;
+                address = _roundRobin.Lease(_context).Result;
                 address.Data.ShouldBe(_services[2].HostAndPort);
             }
         }
 
         private void GivenIGetTheNextAddress()
         {
-            _hostAndPort = _roundRobin.Lease(_httpContext).Result;
+            _hostAndPort = _roundRobin.Lease(_context).Result;
         }
 
         private void ThenTheNextAddressIndexIs(int index)

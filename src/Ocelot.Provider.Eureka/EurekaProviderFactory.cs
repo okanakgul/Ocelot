@@ -1,18 +1,18 @@
 ﻿namespace Ocelot.Provider.Eureka
 {
     using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.ServiceDiscovery;
-    using Steeltoe.Discovery;
+    using ServiceDiscovery;
+    using Steeltoe.Common.Discovery;
 
     public static class EurekaProviderFactory
     {
-        public static ServiceDiscoveryFinderDelegate Get = (provider, config, route) =>
+        public static ServiceDiscoveryFinderDelegate Get = (provider, config, reRoute) =>
         {
             var client = provider.GetService<IDiscoveryClient>();
 
             if (config.Type?.ToLower() == "eureka" && client != null)
             {
-                return new Eureka(route.ServiceName, client);
+                return new Eureka(reRoute.ServiceName, client);
             }
 
             return null;

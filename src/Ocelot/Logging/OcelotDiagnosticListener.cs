@@ -1,10 +1,11 @@
-﻿namespace Ocelot.Logging
-{
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.DiagnosticAdapter;
-    using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DiagnosticAdapter;
+using Ocelot.Middleware;
+using System;
 
+namespace Ocelot.Logging
+{
     public class OcelotDiagnosticListener
     {
         private readonly IOcelotLogger _logger;
@@ -14,6 +15,27 @@
         {
             _logger = factory.CreateLogger<OcelotDiagnosticListener>();
             _tracer = serviceProvider.GetService<ITracer>();
+        }
+
+        [DiagnosticName("Ocelot.MiddlewareException")]
+        public virtual void OcelotMiddlewareException(Exception exception, DownstreamContext context, string name)
+        {
+            _logger.LogTrace($"Ocelot.MiddlewareException: {name}; {exception.Message};");
+            Event(context.HttpContext, $"Ocelot.MiddlewareStarted: {name}; {context.HttpContext.Request.Path}");
+        }
+
+        [DiagnosticName("Ocelot.MiddlewareStarted")]
+        public virtual void OcelotMiddlewareStarted(DownstreamContext context, string name)
+        {
+            _logger.LogTrace($"Ocelot.MiddlewareStarted: {name}; {context.HttpContext.Request.Path}");
+            Event(context.HttpContext, $"Ocelot.MiddlewareStarted: {name}; {context.HttpContext.Request.Path}");
+        }
+
+        [DiagnosticName("Ocelot.MiddlewareFinished")]
+        public virtual void OcelotMiddlewareFinished(DownstreamContext context, string name)
+        {
+            _logger.LogTrace($"Ocelot.MiddlewareFinished: {name}; {context.HttpContext.Request.Path}");
+            Event(context.HttpContext, $"OcelotMiddlewareFinished: {name}; {context.HttpContext.Request.Path}");
         }
 
         [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting")]

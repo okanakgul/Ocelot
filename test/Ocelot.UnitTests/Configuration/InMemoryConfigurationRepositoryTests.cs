@@ -5,8 +5,6 @@ using Ocelot.Responses;
 using Shouldly;
 using System;
 using System.Collections.Generic;
-using Moq;
-using Ocelot.Configuration.ChangeTracking;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -18,13 +16,10 @@ namespace Ocelot.UnitTests.Configuration
         private IInternalConfiguration _config;
         private Response _result;
         private Response<IInternalConfiguration> _getResult;
-        private readonly Mock<IOcelotConfigurationChangeTokenSource> _changeTokenSource;
 
         public InMemoryConfigurationRepositoryTests()
         {
-            _changeTokenSource = new Mock<IOcelotConfigurationChangeTokenSource>(MockBehavior.Strict);
-            _changeTokenSource.Setup(m => m.Activate());
-            _repo = new InMemoryInternalConfigurationRepository(_changeTokenSource.Object);
+            _repo = new InMemoryInternalConfigurationRepository();
         }
 
         [Fact]
@@ -33,7 +28,6 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheConfigurationIs(new FakeConfig("initial", "adminath")))
                 .When(x => x.WhenIAddOrReplaceTheConfig())
                 .Then(x => x.ThenNoErrorsAreReturned())
-                .And(x => AndTheChangeTokenIsActivated())
                 .BDDfy();
         }
 
@@ -48,7 +42,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheConfigurationIsReturned()
         {
-            _getResult.Data.Routes[0].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("initial");
+            _getResult.Data.ReRoutes[0].DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("initial");
         }
 
         private void WhenIGetTheConfiguration()
@@ -77,11 +71,6 @@ namespace Ocelot.UnitTests.Configuration
             _result.IsError.ShouldBeFalse();
         }
 
-        private void AndTheChangeTokenIsActivated()
-        {
-            _changeTokenSource.Verify(m => m.Activate(), Times.Once);
-        }
-
         private class FakeConfig : IInternalConfiguration
         {
             private readonly string _downstreamTemplatePath;
@@ -92,19 +81,19 @@ namespace Ocelot.UnitTests.Configuration
                 AdministrationPath = administrationPath;
             }
 
-            public List<Route> Routes
+            public List<ReRoute> ReRoutes
             {
                 get
                 {
-                    var downstreamRoute = new DownstreamRouteBuilder()
+                    var downstreamReRoute = new DownstreamReRouteBuilder()
                         .WithDownstreamPathTemplate(_downstreamTemplatePath)
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build();
 
-                    return new List<Route>
+                    return new List<ReRoute>
                     {
-                        new RouteBuilder()
-                            .WithDownstreamRoute(downstreamRoute)
+                        new ReRouteBuilder()
+                            .WithDownstreamReRoute(downstreamReRoute)
                             .WithUpstreamHttpMethod(new List<string> {"Get"})
                             .Build()
                     };
@@ -120,7 +109,6 @@ namespace Ocelot.UnitTests.Configuration
             public string DownstreamScheme { get; }
             public QoSOptions QoSOptions { get; }
             public HttpHandlerOptions HttpHandlerOptions { get; }
-            public Version DownstreamHttpVersion { get; }
         }
     }
 }

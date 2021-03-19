@@ -1,61 +1,59 @@
+using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Middleware.Multiplexer;
+using System.Linq;
+using System.Threading.Tasks;
+
 namespace Ocelot.DownstreamRouteFinder.Middleware
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Finder;
-    using Ocelot.Infrastructure.Extensions;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using System.Linq;
-    using System.Threading.Tasks;
-
     public class DownstreamRouteFinderMiddleware : OcelotMiddleware
     {
-        private readonly RequestDelegate _next;
+        private readonly OcelotRequestDelegate _next;
         private readonly IDownstreamRouteProviderFactory _factory;
+        private readonly IMultiplexer _multiplexer;
 
-        public DownstreamRouteFinderMiddleware(RequestDelegate next,
+        public DownstreamRouteFinderMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamRouteProviderFactory downstreamRouteFinder
-            )
+            IDownstreamRouteProviderFactory downstreamRouteFinder,
+            IMultiplexer multiplexer)
                 : base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
         {
+            _multiplexer = multiplexer;
             _next = next;
             _factory = downstreamRouteFinder;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(DownstreamContext context)
         {
-            var upstreamUrlPath = httpContext.Request.Path.ToString();
+            var upstreamUrlPath = context.HttpContext.Request.Path.ToString();
 
-            var upstreamQueryString = httpContext.Request.QueryString.ToString();
+            var upstreamQueryString = context.HttpContext.Request.QueryString.ToString();
 
-            var upstreamHost = httpContext.Request.Headers["Host"];
+            var upstreamHost = context.HttpContext.Request.Headers["Host"];
 
             Logger.LogDebug($"Upstream url path is {upstreamUrlPath}");
 
-            var internalConfiguration = httpContext.Items.IInternalConfiguration();
+            var provider = _factory.Get(context.Configuration);
 
-            var provider = _factory.Get(internalConfiguration);
+            var downstreamRoute = provider.Get(upstreamUrlPath, upstreamQueryString, context.HttpContext.Request.Method, context.Configuration, upstreamHost);
 
-            var response = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, internalConfiguration, upstreamHost);
-
-            if (response.IsError)
+            if (downstreamRoute.IsError)
             {
-                Logger.LogWarning($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {response.Errors.ToErrorString()}");
+                Logger.LogWarning($"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {downstreamRoute.Errors.ToErrorString()}");
 
-                httpContext.Items.UpsertErrors(response.Errors);
+                SetPipelineError(context, downstreamRoute.Errors);
                 return;
             }
 
-            var downstreamPathTemplates = string.Join(", ", response.Data.Route.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value));
+            var downstreamPathTemplates = string.Join(", ", downstreamRoute.Data.ReRoute.DownstreamReRoute.Select(r => r.DownstreamPathTemplate.Value));
+
             Logger.LogDebug($"downstream templates are {downstreamPathTemplates}");
 
-            // why set both of these on HttpContext
-            httpContext.Items.UpsertTemplatePlaceholderNameAndValues(response.Data.TemplatePlaceholderNameAndValues);
+            context.TemplatePlaceholderNameAndValues = downstreamRoute.Data.TemplatePlaceholderNameAndValues;
 
-            httpContext.Items.UpsertDownstreamRoute(response.Data);
-
-            await _next.Invoke(httpContext);
+            await _multiplexer.Multiplex(context, downstreamRoute.Data.ReRoute, _next);
         }
     }
 }

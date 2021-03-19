@@ -1,14 +1,13 @@
-﻿namespace Ocelot.LoadBalancer.LoadBalancers
-{
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Middleware;
-    using Ocelot.Responses;
-    using Ocelot.Values;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using Ocelot.Middleware;
+using Ocelot.Responses;
+using Ocelot.Values;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
+namespace Ocelot.LoadBalancer.LoadBalancers
+{
     public class LeastConnection : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;
@@ -23,7 +22,7 @@
             _leases = new List<Lease>();
         }
 
-        public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+        public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext)
         {
             var services = await _services.Invoke();
 

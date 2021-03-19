@@ -24,13 +24,12 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
                             DownstreamScheme = "http",
@@ -39,7 +38,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 61879,
                                 }
                             },
                             UpstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
@@ -48,7 +47,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:61879", $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/{unitId}/updates"))
@@ -62,13 +61,13 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
+            var port = 57359;
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/{everything}",
                             DownstreamScheme = "http",
@@ -100,13 +99,12 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
                         DownstreamScheme = "http",
@@ -115,7 +113,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 64879,
                             }
                         },
                         UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
@@ -124,7 +122,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", "", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:64879", $"/api/units/{subscriptionId}/{unitId}/updates", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}"))
@@ -138,13 +136,12 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
                         DownstreamScheme = "http",
@@ -153,7 +150,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 64879,
                             }
                         },
                         UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
@@ -162,7 +159,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", "", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:64879", $"/api/units/{subscriptionId}/{unitId}/updates", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates"))
@@ -175,13 +172,12 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
                         DownstreamScheme = "http",
@@ -190,7 +186,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 64879,
                             }
                         },
                         UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
@@ -199,7 +195,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", "", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:64879", $"/api/units/{subscriptionId}/{unitId}/updates", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?test=1"))
@@ -212,13 +208,12 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
                         DownstreamScheme = "http",
@@ -227,7 +222,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 64879,
                             }
                         },
                         UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
@@ -236,7 +231,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:64879", $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId=1"))

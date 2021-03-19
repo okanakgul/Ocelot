@@ -21,8 +21,8 @@ namespace Ocelot.UnitTests.Kubernetes
     public class KubeServiceDiscoveryProviderTests : IDisposable
     {
         private IWebHost _fakeKubeBuilder;
-        private readonly KubernetesServiceDiscoveryProvider _provider;
-        private EndpointsV1 _endpointEntries;
+        private ServiceV1 _serviceEntries;
+        private Kube _provider;
         private readonly string _serviceName;
         private readonly string _namespaces;
         private readonly int _port;
@@ -38,10 +38,10 @@ namespace Ocelot.UnitTests.Kubernetes
         {
             _serviceName = "test";
             _namespaces = "dev";
-            _port = 86;
+            _port = 8001;
             _kubeHost = "localhost";
             _fakekubeServiceDiscoveryUrl = $"http://{_kubeHost}:{_port}";
-            _endpointEntries = new EndpointsV1();
+            _serviceEntries = new ServiceV1();
             _factory = new Mock<IOcelotLoggerFactory>();
 
             var option = new KubeClientOptions
@@ -49,56 +49,55 @@ namespace Ocelot.UnitTests.Kubernetes
                 ApiEndPoint = new Uri(_fakekubeServiceDiscoveryUrl),
                 AccessToken = "txpc696iUhbVoudg164r93CxDTrKRVWG",
                 AuthStrategy = KubeClient.KubeAuthStrategy.BearerToken,
-                AllowInsecure = true,
+                AllowInsecure = true
             };
 
             _clientFactory = KubeApiClient.Create(option);
             _logger = new Mock<IOcelotLogger>();
-            _factory.Setup(x => x.CreateLogger<KubernetesServiceDiscoveryProvider>()).Returns(_logger.Object);
+            _factory.Setup(x => x.CreateLogger<Kube>()).Returns(_logger.Object);
             var config = new KubeRegistryConfiguration()
             {
                 KeyOfServiceInK8s = _serviceName,
-                KubeNamespace = _namespaces,
+                KubeNamespace = _namespaces
             };
-            _provider = new KubernetesServiceDiscoveryProvider(config, _factory.Object, _clientFactory);
+            _provider = new Kube(config, _factory.Object, _clientFactory);
         }
 
         [Fact]
         public void should_return_service_from_k8s()
         {
             var token = "Bearer txpc696iUhbVoudg164r93CxDTrKRVWG";
-            var endPointEntryOne = new EndpointsV1
+            var serviceEntryOne = new ServiceV1()
             {
-                Kind = "endpoint",
+                Kind = "service",
                 ApiVersion = "1.0",
                 Metadata = new ObjectMetaV1()
                 {
-                    Namespace = "dev",
+                    Namespace = "dev"
                 },
+                Spec = new ServiceSpecV1()
+                {
+                    ClusterIP = "localhost"
+                },
+                Status = new ServiceStatusV1()
+                {
+                    LoadBalancer = new LoadBalancerStatusV1()
+                }
             };
-            var endpointSubsetV1 = new EndpointSubsetV1();
-            endpointSubsetV1.Addresses.Add(new EndpointAddressV1()
-            {
-                Ip = "127.0.0.1",
-                Hostname = "localhost",
-            });
-            endpointSubsetV1.Ports.Add(new EndpointPortV1()
-            {
-                Port = 80,
-            });
-            endPointEntryOne.Subsets.Add(endpointSubsetV1);
+
+            serviceEntryOne.Spec.Ports.Add(
+                new ServicePortV1()
+                {
+                    Port = 80
+                }
+            );
 
             this.Given(x => GivenThereIsAFakeKubeServiceDiscoveryProvider(_fakekubeServiceDiscoveryUrl, _serviceName, _namespaces))
-                .And(x => GivenTheServicesAreRegisteredWithKube(endPointEntryOne))
+                .And(x => GivenTheServicesAreRegisteredWithKube(serviceEntryOne))
                 .When(x => WhenIGetTheServices())
                 .Then(x => ThenTheCountIs(1))
-                .And(_ => ThenTheTokenIs(token))
+                .And(_ => _receivedToken.ShouldBe(token))
                 .BDDfy();
-        }
-
-        private void ThenTheTokenIs(string token)
-        {
-            _receivedToken.ShouldBe(token);
         }
 
         private void ThenTheCountIs(int count)
@@ -111,9 +110,9 @@ namespace Ocelot.UnitTests.Kubernetes
             _services = _provider.Get().GetAwaiter().GetResult();
         }
 
-        private void GivenTheServicesAreRegisteredWithKube(EndpointsV1 endpointEntries)
+        private void GivenTheServicesAreRegisteredWithKube(ServiceV1 serviceEntries)
         {
-            _endpointEntries = endpointEntries;
+            _serviceEntries = serviceEntries;
         }
 
         private void GivenThereIsAFakeKubeServiceDiscoveryProvider(string url, string serviceName, string namespaces)
@@ -128,14 +127,14 @@ namespace Ocelot.UnitTests.Kubernetes
                 {
                     app.Run(async context =>
                     {
-                        if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")
+                        if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/services/{serviceName}")
                         {
                             if (context.Request.Headers.TryGetValue("Authorization", out var values))
                             {
                                 _receivedToken = values.First();
                             }
 
-                            var json = JsonConvert.SerializeObject(_endpointEntries);
+                            var json = JsonConvert.SerializeObject(_serviceEntries);
                             context.Response.Headers.Add("Content-Type", "application/json");
                             await context.Response.WriteAsync(json);
                         }

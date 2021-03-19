@@ -28,18 +28,16 @@
         [Fact]
         public void should_fix_issue_194()
         {
-            var consulPort = RandomPortFinder.GetRandomPort();
-            var servicePort1 = RandomPortFinder.GetRandomPort();
-            var servicePort2 = RandomPortFinder.GetRandomPort();
-            var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
-            var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
+            var consulPort = 8503;
+            var downstreamServiceOneUrl = "http://localhost:8362";
+            var downstreamServiceTwoUrl = "http://localhost:8330";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/user/{user}",
                             DownstreamScheme = "http",
@@ -48,13 +46,13 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = servicePort1,
+                                    Port = 8362,
                                 }
                             },
                             UpstreamPathTemplate = "/api/user/{user}",
                             UpstreamHttpMethod = new List<string> { "Get" },
                         },
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/api/product/{product}",
                             DownstreamScheme = "http",
@@ -63,7 +61,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = servicePort2,
+                                    Port = 8330,
                                 }
                             },
                             UpstreamPathTemplate = "/api/product/{product}",
@@ -74,7 +72,6 @@
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
-                        Scheme = "https",
                         Host = "localhost",
                         Port = consulPort
                     }

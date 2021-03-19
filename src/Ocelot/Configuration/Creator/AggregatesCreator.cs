@@ -14,42 +14,42 @@ namespace Ocelot.Configuration.Creator
             _creator = creator;
         }
 
-        public List<Route> Create(FileConfiguration fileConfiguration, List<Route> routes)
+        public List<ReRoute> Create(FileConfiguration fileConfiguration, List<ReRoute> reRoutes)
         {
             return fileConfiguration.Aggregates
-                .Select(aggregate => SetUpAggregateRoute(routes, aggregate, fileConfiguration.GlobalConfiguration))
+                .Select(aggregate => SetUpAggregateReRoute(reRoutes, aggregate, fileConfiguration.GlobalConfiguration))
                 .Where(aggregate => aggregate != null)
                 .ToList();
         }
 
-        private Route SetUpAggregateRoute(IEnumerable<Route> routes, FileAggregateRoute aggregateRoute, FileGlobalConfiguration globalConfiguration)
+        private ReRoute SetUpAggregateReRoute(IEnumerable<ReRoute> reRoutes, FileAggregateReRoute aggregateReRoute, FileGlobalConfiguration globalConfiguration)
         {
-            var applicableRoutes = new List<DownstreamRoute>();
-            var allRoutes = routes.SelectMany(x => x.DownstreamRoute);
+            var applicableReRoutes = new List<DownstreamReRoute>();
+            var allReRoutes = reRoutes.SelectMany(x => x.DownstreamReRoute);
 
-            foreach (var routeKey in aggregateRoute.RouteKeys)
+            foreach (var reRouteKey in aggregateReRoute.ReRouteKeys)
             {
-                var selec = allRoutes.FirstOrDefault(q => q.Key == routeKey);
+                var selec = allReRoutes.FirstOrDefault(q => q.Key == reRouteKey);
                 if (selec == null)
                 {
                     return null;
                 }
 
-                applicableRoutes.Add(selec);
+                applicableReRoutes.Add(selec);
             }
 
-            var upstreamTemplatePattern = _creator.Create(aggregateRoute);
+            var upstreamTemplatePattern = _creator.Create(aggregateReRoute);
 
-            var route = new RouteBuilder()
-                .WithUpstreamHttpMethod(aggregateRoute.UpstreamHttpMethod)
+            var reRoute = new ReRouteBuilder()
+                .WithUpstreamHttpMethod(aggregateReRoute.UpstreamHttpMethod)
                 .WithUpstreamPathTemplate(upstreamTemplatePattern)
-                .WithDownstreamRoutes(applicableRoutes)
-                .WithAggregateRouteConfig(aggregateRoute.RouteKeysConfig)
-                .WithUpstreamHost(aggregateRoute.UpstreamHost)
-                .WithAggregator(aggregateRoute.Aggregator)
+                .WithDownstreamReRoutes(applicableReRoutes)
+                .WithAggregateReRouteConfig(aggregateReRoute.ReRouteKeysConfig)
+                .WithUpstreamHost(aggregateReRoute.UpstreamHost)
+                .WithAggregator(aggregateReRoute.Aggregator)
                 .Build();
 
-            return route;
+            return reRoute;
         }
     }
 }

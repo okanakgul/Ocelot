@@ -8,7 +8,7 @@ namespace Ocelot.UnitTests.Configuration
 {
     public class RequestIdKeyCreatorTests
     {
-        private FileRoute _fileRoute;
+        private FileReRoute _fileReRoute;
         private FileGlobalConfiguration _fileGlobalConfig;
         private string _result;
         private RequestIdKeyCreator _creator;
@@ -21,13 +21,13 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_use_global_configuration()
         {
-            var route = new FileRoute();
+            var reRoute = new FileReRoute();
             var globalConfig = new FileGlobalConfiguration
             {
                 RequestIdKey = "cheese"
             };
 
-            this.Given(x => x.GivenTheFollowingRoute(route))
+            this.Given(x => x.GivenTheFollowingReRoute(reRoute))
                 .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
                 .When(x => x.WhenICreate())
                 .Then(x => x.ThenTheFollowingIsReturned("cheese"))
@@ -37,13 +37,13 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_use_re_route_specific()
         {
-            var route = new FileRoute
+            var reRoute = new FileReRoute
             {
                 RequestIdKey = "cheese"
             };
             var globalConfig = new FileGlobalConfiguration();
 
-            this.Given(x => x.GivenTheFollowingRoute(route))
+            this.Given(x => x.GivenTheFollowingReRoute(reRoute))
                 .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
                 .When(x => x.WhenICreate())
                 .Then(x => x.ThenTheFollowingIsReturned("cheese"))
@@ -53,7 +53,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_use_re_route_over_global_specific()
         {
-            var route = new FileRoute
+            var reRoute = new FileReRoute
             {
                 RequestIdKey = "cheese"
             };
@@ -62,16 +62,16 @@ namespace Ocelot.UnitTests.Configuration
                 RequestIdKey = "test"
             };
 
-            this.Given(x => x.GivenTheFollowingRoute(route))
+            this.Given(x => x.GivenTheFollowingReRoute(reRoute))
                 .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
                 .When(x => x.WhenICreate())
                 .Then(x => x.ThenTheFollowingIsReturned("cheese"))
                 .BDDfy();
         }
 
-        private void GivenTheFollowingRoute(FileRoute fileRoute)
+        private void GivenTheFollowingReRoute(FileReRoute fileReRoute)
         {
-            _fileRoute = fileRoute;
+            _fileReRoute = fileReRoute;
         }
 
         private void GivenTheFollowingGlobalConfig(FileGlobalConfiguration globalConfig)
@@ -81,7 +81,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreate()
         {
-            _result = _creator.Create(_fileRoute, _fileGlobalConfig);
+            _result = _creator.Create(_fileReRoute, _fileGlobalConfig);
         }
 
         private void ThenTheFollowingIsReturned(string expected)

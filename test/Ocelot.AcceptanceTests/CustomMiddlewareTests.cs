@@ -32,20 +32,18 @@
         {
             var configuration = new OcelotPipelineConfiguration
             {
-                AuthorizationMiddleware = async (ctx, next) =>
+                AuthorisationMiddleware = async (ctx, next) =>
                 {
                     _counter++;
                     await next.Invoke();
                 }
             };
 
-            var port = RandomPortFinder.GetRandomPort();
-
             var fileConfiguration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -53,7 +51,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 41879,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -63,7 +61,7 @@
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -73,24 +71,22 @@
         }
 
         [Fact]
-        public void should_call_authorization_middleware()
+        public void should_call_authorisation_middleware()
         {
             var configuration = new OcelotPipelineConfiguration
             {
-                AuthorizationMiddleware = async (ctx, next) =>
+                AuthorisationMiddleware = async (ctx, next) =>
                 {
                     _counter++;
                     await next.Invoke();
                 }
             };
 
-            var port = RandomPortFinder.GetRandomPort();
-
             var fileConfiguration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -98,7 +94,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 41879,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -108,7 +104,7 @@
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -129,13 +125,11 @@
                 }
             };
 
-            var port = RandomPortFinder.GetRandomPort();
-
             var fileConfiguration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/41879/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -143,7 +137,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 41879,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -153,7 +147,7 @@
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -174,13 +168,11 @@
                 }
             };
 
-            var port = RandomPortFinder.GetRandomPort();
-
             var fileConfiguration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -188,7 +180,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 41879,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -198,7 +190,7 @@
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -208,24 +200,22 @@
         }
 
         [Fact]
-        public void should_call_pre_authorization_middleware()
+        public void should_call_pre_authorisation_middleware()
         {
             var configuration = new OcelotPipelineConfiguration
             {
-                PreAuthorizationMiddleware = async (ctx, next) =>
+                PreAuthorisationMiddleware = async (ctx, next) =>
                 {
                     _counter++;
                     await next.Invoke();
                 }
             };
 
-            var port = RandomPortFinder.GetRandomPort();
-
             var fileConfiguration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -233,7 +223,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 41879,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -243,7 +233,7 @@
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -264,13 +254,11 @@
                 }
             };
 
-            var port = RandomPortFinder.GetRandomPort();
-
             var fileConfiguration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -278,7 +266,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 41879,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -288,7 +276,7 @@
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41879", 200, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -313,13 +301,11 @@
                 return Task.CompletedTask;
             };
 
-            var port = RandomPortFinder.GetRandomPort();
-
             var fileConfiguration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/west",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -327,7 +313,7 @@
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = port,
+                                    Port = 41880,
                                 }
                             },
                             DownstreamScheme = "http",
@@ -337,7 +323,7 @@
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "/test"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:41880", 200, "/test"))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
                 .And(x => _steps.GivenOcelotIsRunningWithMiddleareBeforePipeline<FakeMiddleware>(callback))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

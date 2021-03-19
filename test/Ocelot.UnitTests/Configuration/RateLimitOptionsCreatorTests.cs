@@ -12,7 +12,7 @@ namespace Ocelot.UnitTests.Configuration
 {
     public class RateLimitOptionsCreatorTests
     {
-        private FileRoute _fileRoute;
+        private FileReRoute _fileReRoute;
         private FileGlobalConfiguration _fileGlobalConfig;
         private bool _enabled;
         private RateLimitOptionsCreator _creator;
@@ -26,7 +26,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_rate_limit_options()
         {
-            var fileRoute = new FileRoute
+            var fileReRoute = new FileReRoute
             {
                 RateLimitOptions = new FileRateLimitRule
                 {
@@ -50,18 +50,18 @@ namespace Ocelot.UnitTests.Configuration
             };
             var expected = new RateLimitOptionsBuilder()
                 .WithClientIdHeader("ClientIdHeader")
-                .WithClientWhiteList(() => fileRoute.RateLimitOptions.ClientWhitelist)
+                .WithClientWhiteList(fileReRoute.RateLimitOptions.ClientWhitelist)
                 .WithDisableRateLimitHeaders(true)
                 .WithEnableRateLimiting(true)
                 .WithHttpStatusCode(200)
                 .WithQuotaExceededMessage("QuotaExceededMessage")
                 .WithRateLimitCounterPrefix("RateLimitCounterPrefix")
-                .WithRateLimitRule(new RateLimitRule(fileRoute.RateLimitOptions.Period,
-                       fileRoute.RateLimitOptions.PeriodTimespan,
-                       fileRoute.RateLimitOptions.Limit))
+                .WithRateLimitRule(new RateLimitRule(fileReRoute.RateLimitOptions.Period,
+                       fileReRoute.RateLimitOptions.PeriodTimespan,
+                       fileReRoute.RateLimitOptions.Limit))
                 .Build();
 
-            this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
+            this.Given(x => x.GivenTheFollowingFileReRoute(fileReRoute))
                 .And(x => x.GivenTheFollowingFileGlobalConfig(fileGlobalConfig))
                 .And(x => x.GivenRateLimitingIsEnabled())
                 .When(x => x.WhenICreate())
@@ -69,9 +69,9 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-        private void GivenTheFollowingFileRoute(FileRoute fileRoute)
+        private void GivenTheFollowingFileReRoute(FileReRoute fileReRoute)
         {
-            _fileRoute = fileRoute;
+            _fileReRoute = fileReRoute;
         }
 
         private void GivenTheFollowingFileGlobalConfig(FileGlobalConfiguration fileGlobalConfig)
@@ -86,7 +86,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreate()
         {
-            _result = _creator.Create(_fileRoute.RateLimitOptions, _fileGlobalConfig);
+            _result = _creator.Create(_fileReRoute.RateLimitOptions, _fileGlobalConfig);
         }
 
         private void ThenTheFollowingIsReturned(RateLimitOptions expected)

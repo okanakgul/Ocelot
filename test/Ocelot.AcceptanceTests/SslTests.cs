@@ -23,13 +23,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_dangerous_accept_any_server_certificate_validator()
         {
-            int port = RandomPortFinder.GetRandomPort();
+            int port = 51129;
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "https",
@@ -60,13 +60,13 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_dangerous_accept_any_server_certificate_validator()
         {
-            int port = RandomPortFinder.GetRandomPort();
+            int port = 52129;
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "https",
@@ -89,7 +89,7 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
                 .BDDfy();
         }
 

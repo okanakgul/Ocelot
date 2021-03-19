@@ -2,7 +2,6 @@ namespace Ocelot.AcceptanceTests
 {
     using Configuration.File;
     using Consul;
-    using IdentityServer4.Extensions;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
@@ -33,14 +32,11 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url_when_using_jsonserialized_cache()
         {
-            int consulPort = RandomPortFinder.GetRandomPort();
-            int servicePort = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                     {
-                        new FileRoute
+                        new FileReRoute
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -49,7 +45,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = servicePort,
+                                    Port = 51779,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -60,17 +56,16 @@ namespace Ocelot.AcceptanceTests
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
                     {
-                        Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
+                        Port = 9502
                     }
                 }
             };
 
-            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+            var fakeConsulServiceDiscoveryUrl = "http://localhost:9502";
 
             this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "", 200, "Hello from Laura"))
+                .And(x => x.GivenThereIsAServiceRunningOn("http://localhost:51779", "", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -171,9 +166,9 @@ namespace Ocelot.AcceptanceTests
                         {
                             context.Response.StatusCode = statusCode;
                             await context.Response.WriteAsync(responseBody);
+                            });
                         });
-                    });
-                })
+                    })
                 .Build();
 
             _builder.Start();

@@ -223,9 +223,9 @@
 
         private FileConfiguration FakeFileConfiguration()
         {
-            var routes = new List<FileRoute>
+            var reRoutes = new List<FileReRoute>
             {
-                new FileRoute
+                new FileReRoute
                 {
                     DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
@@ -244,7 +244,6 @@
             {
                 ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
-                    Scheme = "https",
                     Port = 198,
                     Host = "blah"
                 }
@@ -253,7 +252,7 @@
             return new FileConfiguration
             {
                 GlobalConfiguration = globalConfiguration,
-                Routes = routes
+                ReRoutes = reRoutes
             };
         }
     }

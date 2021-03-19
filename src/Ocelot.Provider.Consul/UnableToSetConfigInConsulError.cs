@@ -1,11 +1,11 @@
 ﻿namespace Ocelot.Provider.Consul
 {
-    using Ocelot.Errors;
+    using Errors;
 
     public class UnableToSetConfigInConsulError : Error
     {
         public UnableToSetConfigInConsulError(string s)
-            : base(s, OcelotErrorCode.UnknownError, 404)
+            : base(s, OcelotErrorCode.UnknownError)
         {
         }
     }

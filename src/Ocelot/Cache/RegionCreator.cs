@@ -5,16 +5,16 @@ namespace Ocelot.Cache
 {
     public class RegionCreator : IRegionCreator
     {
-        public string Create(FileRoute route)
+        public string Create(FileReRoute reRoute)
         {
-            if (!string.IsNullOrEmpty(route?.FileCacheOptions?.Region))
+            if (!string.IsNullOrEmpty(reRoute?.FileCacheOptions?.Region))
             {
-                return route?.FileCacheOptions?.Region;
+                return reRoute?.FileCacheOptions?.Region;
             }
 
-            var methods = string.Join("", route.UpstreamHttpMethod.Select(m => m));
+            var methods = string.Join("", reRoute.UpstreamHttpMethod.Select(m => m));
 
-            var region = $"{methods}{route.UpstreamPathTemplate.Replace("/", "")}";
+            var region = $"{methods}{reRoute.UpstreamPathTemplate.Replace("/", "")}";
 
             return region;
         }

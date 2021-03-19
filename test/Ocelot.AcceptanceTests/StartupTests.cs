@@ -27,13 +27,11 @@
         [Fact]
         public void should_not_try_and_write_to_disk_on_startup_when_not_using_admin_api()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                ReRoutes = new List<FileReRoute>
                 {
-                    new FileRoute
+                    new FileReRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
@@ -42,7 +40,7 @@
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = port,
+                                Port = 52179,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -53,7 +51,7 @@
 
             var fakeRepo = new FakeFileConfigurationRepository();
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:52179", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithBlowingUpDiskRepo(fakeRepo))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

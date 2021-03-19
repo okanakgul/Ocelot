@@ -28,7 +28,7 @@ namespace OcelotGraphQL
 
     public class Query
     {
-        private readonly List<Hero> _heroes = new List<Hero>
+        private List<Hero> _heroes = new List<Hero>
         {
             new Hero { Id = 1, Name = "R2-D2" },
             new Hero { Id = 2, Name = "Batman" },
@@ -45,14 +45,11 @@ namespace OcelotGraphQL
 
     public class GraphQlDelegatingHandler : DelegatingHandler
     {
-        //private readonly ISchema _schema;
-        private readonly IDocumentExecuter _executer;
-        private readonly IDocumentWriter _writer;
+        private readonly ISchema _schema;
 
-        public GraphQlDelegatingHandler(IDocumentExecuter executer, IDocumentWriter writer)
+        public GraphQlDelegatingHandler(ISchema schema)
         {
-            _executer = executer;
-            _writer = writer;
+            _schema = schema;
         }
 
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -61,23 +58,21 @@ namespace OcelotGraphQL
             var query = await request.Content.ReadAsStringAsync();
 
             //if not body try query string, dont hack like this in real world..
-            if (query.Length == 0)
+            if(query.Length == 0)
             {
                 var decoded = WebUtility.UrlDecode(request.RequestUri.Query);
                 query = decoded.Replace("?query=", "");
             }
 
-            var result = await _executer.ExecuteAsync(_ =>
+            var result = _schema.Execute(_ =>
             {
                 _.Query = query;
             });
 
-            var responseBody = await _writer.WriteToStringAsync(result);
-
             //maybe check for errors and headers etc in real world?
             var response = new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(responseBody)
+                Content = new StringContent(result)
             };
 
             //ocelot will treat this like any other http request...
@@ -87,7 +82,7 @@ namespace OcelotGraphQL
 
     public class Program
     {
-        public static void Main()
+        public static void Main(string[] args)
         {
             var schema = Schema.For(@"
                 type Hero {
@@ -98,8 +93,7 @@ namespace OcelotGraphQL
                 type Query {
                     hero(id: Int): Hero
                 }
-            ", _ =>
-            {
+            ", _ => {
                 _.Types.Include<Query>();
             });
 
@@ -115,11 +109,10 @@ namespace OcelotGraphQL
                         .AddJsonFile("ocelot.json", false, false)
                         .AddEnvironmentVariables();
                 })
-                .ConfigureServices(s =>
-                {
-                    s.AddSingleton<ISchema>(schema);
-                    s.AddOcelot()
-                        .AddDelegatingHandler<GraphQlDelegatingHandler>();
+                .ConfigureServices(s => {
+                        s.AddSingleton<ISchema>(schema);
+                        s.AddOcelot()
+                            .AddSingletonDelegatingHandler<GraphQlDelegatingHandler>();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
@@ -132,7 +125,7 @@ namespace OcelotGraphQL
                     app.UseOcelot().Wait();
                 })
                 .Build()
-                .Run();
+                .Run();     
+            }
         }
-    }
 }

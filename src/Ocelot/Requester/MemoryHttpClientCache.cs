@@ -6,19 +6,19 @@
 
     public class MemoryHttpClientCache : IHttpClientCache
     {
-        private readonly ConcurrentDictionary<DownstreamRoute, IHttpClient> _httpClientsCache;
+        private readonly ConcurrentDictionary<DownstreamReRoute, IHttpClient> _httpClientsCache;
 
         public MemoryHttpClientCache()
         {
-            _httpClientsCache = new ConcurrentDictionary<DownstreamRoute, IHttpClient>();
+            _httpClientsCache = new ConcurrentDictionary<DownstreamReRoute, IHttpClient>();
         }
 
-        public void Set(DownstreamRoute key, IHttpClient client, TimeSpan expirationTime)
+        public void Set(DownstreamReRoute key, IHttpClient client, TimeSpan expirationTime)
         {
             _httpClientsCache.AddOrUpdate(key, client, (k, oldValue) => client);
         }
 
-        public IHttpClient Get(DownstreamRoute key)
+        public IHttpClient Get(DownstreamReRoute key)
         {
             //todo handle error?
             return _httpClientsCache.TryGetValue(key, out var client) ? client : null;

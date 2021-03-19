@@ -4,12 +4,12 @@ namespace Ocelot.Configuration.Creator
 {
     public class RequestIdKeyCreator : IRequestIdKeyCreator
     {
-        public string Create(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
+        public string Create(FileReRoute fileReRoute, FileGlobalConfiguration globalConfiguration)
         {
-            var routeId = !string.IsNullOrEmpty(fileRoute.RequestIdKey);
+            var reRouteId = !string.IsNullOrEmpty(fileReRoute.RequestIdKey);
 
-            var requestIdKey = routeId
-               ? fileRoute.RequestIdKey
+            var requestIdKey = reRouteId
+               ? fileReRoute.RequestIdKey
                : globalConfiguration.RequestIdKey;
 
             return requestIdKey;
