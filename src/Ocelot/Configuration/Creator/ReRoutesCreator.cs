@@ -1,8 +1,8 @@
 namespace Ocelot.Configuration.Creator
 {
-    using Builder;
-    using Cache;
-    using File;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.Cache;
+    using Ocelot.Configuration.File;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -119,7 +119,7 @@ namespace Ocelot.Configuration.Creator
                 .WithClaimsToDownstreamPath(claimsToDownstreamPath)
                 .WithRequestIdKey(requestIdKey)
                 .WithIsCached(fileReRouteOptions.IsCached)
-                .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds, region))
+                .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds, region, fileReRoute.FileCacheOptions.Header))
                 .WithDownstreamScheme(fileReRoute.DownstreamScheme)
                 .WithLoadBalancerOptions(lbOptions)
                 .WithDownstreamAddresses(downstreamAddresses)

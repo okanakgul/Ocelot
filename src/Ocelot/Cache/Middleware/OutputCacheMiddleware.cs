@@ -28,14 +28,17 @@
 
         public async Task Invoke(DownstreamContext context)
         {
-            if (!context.DownstreamReRoute.IsCached)
+            var downstreamRoute = context.DownstreamReRoute;
+            if (!downstreamRoute.IsCached)
             {
                 await _next.Invoke(context);
                 return;
             }
+            var downstreamRequest = context.DownstreamRequest;
 
             var downstreamUrlKey = $"{context.DownstreamRequest.Method}-{context.DownstreamRequest.OriginalString}";
-            string downStreamRequestCacheKey = _cacheGeneratot.GenerateRequestCacheKey(context);
+
+            string downStreamRequestCacheKey = _cacheGeneratot.GenerateRequestCacheKey(downstreamRequest, downstreamRoute);
 
             Logger.LogDebug($"Started checking cache for {downstreamUrlKey}");
 
@@ -67,9 +70,8 @@
             if (context.DownstreamResponse.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 cached = await CreateCachedResponse(context.DownstreamResponse);
-
                 _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(context.DownstreamReRoute.CacheOptions.TtlSeconds), context.DownstreamReRoute.CacheOptions.Region);
-
+                var asd = cached.Body;
                 Logger.LogDebug($"finished response added to cache for {downstreamUrlKey}");
             }
             else

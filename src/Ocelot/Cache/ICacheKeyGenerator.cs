@@ -1,9 +1,11 @@
-﻿using Ocelot.Middleware;
-
-namespace Ocelot.Cache
+﻿namespace Ocelot.Cache
 {
+    using Ocelot.Configuration;
+    using Ocelot.DownstreamRouteFinder;
+    using Ocelot.Request.Middleware;
+
     public interface ICacheKeyGenerator
     {
-        string GenerateRequestCacheKey(DownstreamContext context);
+        string GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamReRoute downstreamRoute);
     }
 }
